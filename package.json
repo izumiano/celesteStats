@@ -1,0 +1,42 @@
+{
+	"name": "celestestats",
+	"private": true,
+	"version": "0.0.0",
+	"type": "module",
+	"author": "izumiano",
+	"description": "",
+	"keywords": [],
+	"homepage": "https://izumiano.github.com/celesteStats/",
+	"licence": "MIT",
+	"repository": "github:izumiano/celesteStats",
+	"bugs": {
+		"url": "https://github.com/izumiano/celesteStats/issues"
+	},
+	"exports": null,
+	"scripts": {
+		"dev": "vite --host",
+		"typecheck": "tsc --watch --noEmit -p tsconfig.typecheck.json",
+		"build": "tsc -b && vite build",
+		"lint": "biome check",
+		"lintFix": "biome check --write",
+		"preview": "npm run build && vite preview --host",
+		"test": "vitest"
+	},
+	"dependencies": {
+		"@izumiano/vite-logger": "^0.0.1",
+		"react": "^19.2.0",
+		"react-dom": "^19.2.0"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.4.4",
+		"@pbr1111/vite-plugin-biome": "^1.1.3",
+		"@types/node": "^24.11.0",
+		"@types/react": "^19.2.7",
+		"@types/react-dom": "^19.2.3",
+		"@vitejs/plugin-react": "^5.1.1",
+		"globals": "^16.5.0",
+		"typescript": "~5.9.3",
+		"vite": "^7.3.1",
+		"vitest": "^4.0.18"
+	}
+}
