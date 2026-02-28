@@ -1,5 +1,6 @@
-import { log } from "@izumiano/vite-logger";
+import { logError } from "@izumiano/vite-logger";
 import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 
 interface MapAttributesResponse {
 	Completed: "true" | "false";
@@ -156,17 +157,45 @@ export default function useCelesteStats() {
 
 	useEffect(() => {
 		(async () => {
-			const saveDataResponse = await fetch(import.meta.env.VITE_CELESTE_STATS);
+			let isConnected = false;
+			const controller = new AbortController();
+			setTimeout(() => {
+				if (!isConnected) {
+					controller.abort();
+				}
+			}, 10000);
 
-			log("Connection", saveDataResponse);
+			fetch(import.meta.env.VITE_CELESTE_STATS, {
+				signal: controller.signal,
+			})
+				.then(async (response) => {
+					isConnected = true;
 
-			const saveData: SaveDataResponse = await saveDataResponse.json();
+					if (!response.ok) {
+						const errorBody = await response.text();
+						throw new Error(
+							`HTTP error! status: ${response.status}, message: ${errorBody}`,
+						);
+					}
 
-			log("data");
+					const saveData: SaveDataResponse = await response.json();
 
-			const stats = recurseNodes(saveData.levelSetStats);
+					const stats = recurseNodes(saveData.levelSetStats);
+					stats.title = "Total";
 
-			setSaveData({ levelSetStats: stats, timestamp: saveData.timestamp });
+					setSaveData({ levelSetStats: stats, timestamp: saveData.timestamp });
+				})
+				.catch((reason) => {
+					logError(reason);
+
+					let errorMessage = "Unknown error";
+					if (reason instanceof Error) {
+						errorMessage = reason.message;
+					}
+					toast.error(
+						`Getting celeste stats failed with error: ${errorMessage}`,
+					);
+				});
 		})();
 	}, []);
 

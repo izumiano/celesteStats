@@ -1,5 +1,4 @@
 import { useId } from "react";
-import { log } from "@izumiano/vite-logger";
 import { formatTime } from "./utils";
 import useCelesteStats from "./useCelesteStats";
 
@@ -7,8 +6,6 @@ export default function StatsPage() {
 	const saveData = useCelesteStats();
 
 	const id = useId();
-
-	log({ saveData });
 
 	return (
 		<div>
