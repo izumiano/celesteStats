@@ -35,7 +35,7 @@ interface SaveDataResponse {
 
 //
 
-interface NodeStats {
+export interface NodeStats {
 	title: string;
 
 	completed: boolean;
@@ -59,6 +59,20 @@ interface NodeStats {
 interface SaveData {
 	levelSetStats: NodeStats;
 	timestamp: number;
+}
+
+function modeNumberToTitle(mode: number) {
+	switch (mode) {
+		case 0:
+			return "A-Side";
+		case 1:
+			return "B-Side";
+		case 2:
+			return "C-Side";
+		default:
+			logError(`Unknown mode: ${mode}`);
+			return `${mode}`;
+	}
 }
 
 function recurseNodes(stats: MapStatsResponse[] | LevelSetStatsResponse) {
@@ -87,7 +101,7 @@ function recurseNodes(stats: MapStatsResponse[] | LevelSetStatsResponse) {
 		for (const [index, stat] of stats.entries()) {
 			const attr = stat["@attributes"];
 
-			const node = statAttributesToNode(attr, `${index}`);
+			const node = statAttributesToNode(attr, modeNumberToTitle(index));
 			handleNodeStats(nodeStats, node);
 		}
 	} else {
