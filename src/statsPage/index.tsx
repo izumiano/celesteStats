@@ -1,6 +1,7 @@
 import { useId } from "react";
 import { formatTime } from "./utils";
 import useCelesteStats from "./useCelesteStats";
+import NodeList from "./nodeList";
 
 export default function StatsPage({
 	celesteStatsSrc,
@@ -20,14 +21,7 @@ export default function StatsPage({
 				</h1>
 				<h1>Total Deaths: {saveData?.levelSetStats.deaths ?? "?"}</h1>
 			</header>
-			{saveData?.levelSetStats.children.map((node, index) => {
-				return (
-					<div key={id + node.title}>
-						<h2>{`${index + 1} ${node.title}`}</h2>
-						<span>{`Time: ${formatTime(node.timePlayed)}, Deaths: ${node.deaths}`}</span>
-					</div>
-				);
-			})}
+			<NodeList parentId={id} stats={saveData?.levelSetStats.children} />
 		</div>
 	);
 }

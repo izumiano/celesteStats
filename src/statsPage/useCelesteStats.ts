@@ -98,11 +98,13 @@ function recurseNodes(stats: MapStatsResponse[] | LevelSetStatsResponse) {
 
 	// is mode stats
 	if (Array.isArray(stats)) {
+		const pushToNodeStats = stats.length > 1;
+
 		for (const [index, stat] of stats.entries()) {
 			const attr = stat["@attributes"];
 
 			const node = statAttributesToNode(attr, modeNumberToTitle(index));
-			handleNodeStats(nodeStats, node);
+			handleNodeStats(nodeStats, node, pushToNodeStats);
 		}
 	} else {
 		for (const [title, stat] of Object.entries(stats)) {
@@ -115,8 +117,14 @@ function recurseNodes(stats: MapStatsResponse[] | LevelSetStatsResponse) {
 	return nodeStats;
 }
 
-function handleNodeStats(nodeStats: NodeStats, node: NodeStats) {
-	nodeStats.children.push(node);
+function handleNodeStats(
+	nodeStats: NodeStats,
+	node: NodeStats,
+	pushToNodeStats = true,
+) {
+	if (pushToNodeStats) {
+		nodeStats.children.push(node);
+	}
 
 	nodeStats.timePlayed += node.timePlayed;
 	nodeStats.clearTime += node.clearTime;
