@@ -1,8 +1,7 @@
 import { logError } from "@izumiano/vite-logger";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-
-const CELESTE_STATS_LOCAL_ID = "celesteStats";
+import localData from "../localData";
 
 interface MapAttributesResponse {
 	Completed: "true" | "false";
@@ -155,7 +154,7 @@ function statAttributesToNode(
 }
 
 function getLocalStats() {
-	const saveDataStr = localStorage.getItem(CELESTE_STATS_LOCAL_ID);
+	const saveDataStr = localData.getLocalStats();
 
 	if (saveDataStr == null) {
 		return null;
@@ -169,7 +168,7 @@ function getLocalStats() {
 	return { levelSetStats: stats, timestamp: saveData.timestamp };
 }
 
-export default function useCelesteStats() {
+export default function useCelesteStats(celesteStatsSrc: string) {
 	const [saveData, setSaveData] = useState<SaveData | null>(getLocalStats());
 
 	useEffect(() => {
@@ -182,7 +181,7 @@ export default function useCelesteStats() {
 				}
 			}, 10000);
 
-			fetch(import.meta.env.VITE_CELESTE_STATS, {
+			fetch(`${celesteStatsSrc}/celesteSaves/celesteSaves.php`, {
 				signal: controller.signal,
 			})
 				.then(async (response) => {
@@ -200,10 +199,7 @@ export default function useCelesteStats() {
 					const stats = recurseNodes(saveData.levelSetStats);
 					stats.title = "RootNode";
 
-					localStorage.setItem(
-						CELESTE_STATS_LOCAL_ID,
-						JSON.stringify(saveData),
-					);
+					localData.setLocalStats(JSON.stringify(saveData));
 					setSaveData({ levelSetStats: stats, timestamp: saveData.timestamp });
 				})
 				.catch((reason) => {
@@ -218,7 +214,7 @@ export default function useCelesteStats() {
 					);
 				});
 		})();
-	}, []);
+	}, [celesteStatsSrc]);
 
 	return saveData;
 }

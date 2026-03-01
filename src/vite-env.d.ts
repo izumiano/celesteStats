@@ -4,7 +4,6 @@ interface ImportMetaEnv {
 	VITE_TRACE: string;
 	VITE_DO_SERVER_LOG: string;
 	VITE_LOG_URL: string;
-	VITE_CELESTE_STATS: string;
 }
 
 interface ImportMeta {

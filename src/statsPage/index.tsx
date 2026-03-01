@@ -2,8 +2,12 @@ import { useId } from "react";
 import { formatTime } from "./utils";
 import useCelesteStats from "./useCelesteStats";
 
-export default function StatsPage() {
-	const saveData = useCelesteStats();
+export default function StatsPage({
+	celesteStatsSrc,
+}: {
+	celesteStatsSrc: string;
+}) {
+	const saveData = useCelesteStats(celesteStatsSrc);
 
 	const id = useId();
 
