@@ -2,6 +2,8 @@ import { logError } from "@izumiano/vite-logger";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
+const CELESTE_STATS_LOCAL_ID = "celesteStats";
+
 interface MapAttributesResponse {
 	Completed: "true" | "false";
 	TimePlayed: string;
@@ -152,8 +154,23 @@ function statAttributesToNode(
 	};
 }
 
+function getLocalStats() {
+	const saveDataStr = localStorage.getItem(CELESTE_STATS_LOCAL_ID);
+
+	if (saveDataStr == null) {
+		return null;
+	}
+
+	const saveData: SaveDataResponse = JSON.parse(saveDataStr);
+
+	const stats = recurseNodes(saveData.levelSetStats);
+	stats.title = "RootNode";
+
+	return { levelSetStats: stats, timestamp: saveData.timestamp };
+}
+
 export default function useCelesteStats() {
-	const [saveData, setSaveData] = useState<SaveData | null>(null);
+	const [saveData, setSaveData] = useState<SaveData | null>(getLocalStats());
 
 	useEffect(() => {
 		(async () => {
@@ -181,8 +198,12 @@ export default function useCelesteStats() {
 					const saveData: SaveDataResponse = await response.json();
 
 					const stats = recurseNodes(saveData.levelSetStats);
-					stats.title = "Total";
+					stats.title = "RootNode";
 
+					localStorage.setItem(
+						CELESTE_STATS_LOCAL_ID,
+						JSON.stringify(saveData),
+					);
 					setSaveData({ levelSetStats: stats, timestamp: saveData.timestamp });
 				})
 				.catch((reason) => {
