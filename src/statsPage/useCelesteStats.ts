@@ -168,6 +168,7 @@ export default function useCelesteStats(celesteStatsSrc: string) {
 
 	useEffect(() => {
 		(async () => {
+			const toastId = toast.loading("Refreshing Stats");
 			let isConnected = false;
 			const controller = new AbortController();
 			setTimeout(() => {
@@ -196,6 +197,13 @@ export default function useCelesteStats(celesteStatsSrc: string) {
 
 					localData.setLocalStats(JSON.stringify(saveData));
 					setSaveData({ levelSetStats: stats, timestamp: saveData.timestamp });
+
+					toast.update(toastId, {
+						render: "Stats Updated!",
+						type: "success",
+						isLoading: false,
+						autoClose: 3000,
+					});
 				})
 				.catch((reason) => {
 					logError(reason);
@@ -204,9 +212,12 @@ export default function useCelesteStats(celesteStatsSrc: string) {
 					if (reason instanceof Error) {
 						errorMessage = reason.message;
 					}
-					toast.error(
-						`Getting celeste stats failed with error: ${errorMessage}`,
-					);
+					toast.update(toastId, {
+						render: `Getting celeste stats failed with error: ${errorMessage}`,
+						type: "error",
+						isLoading: false,
+						autoClose: 10000,
+					});
 				});
 		})();
 	}, [celesteStatsSrc]);
