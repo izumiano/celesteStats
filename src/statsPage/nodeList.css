@@ -1,3 +1,28 @@
-.indent {
-	padding-left: 2rem;
+.nodeList {
+	display: grid;
+	grid-template-columns: max-content;
+	--defaultNodeHeight: 78px;
+	--gap: 1rem;
+	gap: var(--gap);
+
+	max-height: fit-content;
+
+	.nodeList {
+		max-height: 0;
+		overflow: auto;
+
+		transition: max-height 1s;
+
+		&.expanded {
+			max-height: calc(
+				var(--childCount) *
+				(var(--defaultNodeHeight) + var(--gap))
+			);
+		}
+	}
+
+	.nodeList {
+		display: flex;
+		flex-direction: column;
+	}
 }

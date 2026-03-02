@@ -1,0 +1,39 @@
+.node {
+	--backgroundColor: hsl(235, 12%, 20%);
+	background-color: var(--backgroundColor);
+	border-radius: 1rem;
+	padding: 0.5rem;
+	border: 1px solid rgb(243, 158, 158);
+
+	--expandedLevel: 0;
+	width: calc(75vw + 5rem * var(--expandedLevel));
+
+	transition:
+		width 1s,
+		background-color 0.3s;
+
+	.node {
+		width: 100%;
+	}
+
+	&.expanded {
+		background-color: rgba(219, 83, 158, 0.5);
+	}
+
+	&.empty {
+		border: 1px solid rgba(255, 255, 255, 0.6);
+		background-color: hsl(from var(--backgroundColor) h s 25%);
+	}
+
+	.nodeHeader {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+
+		> img {
+			margin: 0 0.5rem;
+
+			transition: rotate 0.2s;
+		}
+	}
+}

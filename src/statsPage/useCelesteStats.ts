@@ -2,6 +2,7 @@ import { logError } from "@izumiano/vite-logger";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import localData from "../localData";
+import type { NodeStats, SaveData } from "./nodeTypes";
 
 interface MapAttributesResponse {
 	Completed: "true" | "false";
@@ -30,34 +31,6 @@ type LevelSetStatsResponse = {
 
 interface SaveDataResponse {
 	levelSetStats: LevelSetStatsResponse;
-	timestamp: number;
-}
-
-//
-
-export interface NodeStats {
-	title: string;
-
-	completed: boolean;
-	timePlayed: number;
-	clearTime: number;
-	deaths: number;
-	clearDeaths: number;
-	strawberryCount: number;
-	totalStrawberries: number;
-	bestDashes: number;
-	bestDeaths: number;
-	bestFullClearTime: number;
-	bestTime: number;
-	fullClear: boolean;
-	heartGem: boolean;
-	singleRunCompleted: boolean;
-
-	children: NodeStats[];
-}
-
-interface SaveData {
-	levelSetStats: NodeStats;
 	timestamp: number;
 }
 

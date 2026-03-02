@@ -1,6 +1,7 @@
 import StatsPage from "./statsPage";
 import { ToastContainer } from "react-toastify";
 
+import "./reset.css";
 import "./App.css";
 import { useState } from "react";
 import localData from "./localData";
