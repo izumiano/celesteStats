@@ -1,9 +1,94 @@
 :root {
 	--toastify-toast-width: 25rem;
 
-	background-color: rgb(24, 26, 32);
+	--background-color: hsl(225, 14%, 11%);
+	background-color: var(--background-color);
 
 	color: rgb(236, 236, 236);
+
+	font-family: renogare, monospace;
+}
+
+@font-face {
+	font-family: renogare;
+	src: url("/Renogare-Regular.otf");
+}
+
+label:has(> input[type="text"]) {
+	background-color: hsl(from var(--background-color) h s 40% / 0.9);
+	border-radius: 0.5rem;
+	padding: 0 0.5rem 0 0;
+	cursor: text;
+
+	outline: 2px solid transparent;
+	transition: outline 0.3s;
+
+	> input[type="text"] {
+		background-color: transparent;
+		border: none;
+		color: white;
+		padding: 0.5rem;
+
+		&:focus {
+			outline: none;
+		}
+	}
+
+	button.no-pointer {
+		opacity: 0;
+	}
+
+	&:has(> input[type="text"]:focus) {
+		outline: 2px solid rgb(121, 121, 233);
+	}
+}
+
+.flex {
+	display: flex;
+}
+
+.align-center {
+	align-items: center;
+}
+
+.space-between {
+	justify-content: space-between;
+}
+
+.flex-wrap {
+	flex-wrap: wrap;
+}
+
+.relative {
+	position: relative;
+}
+
+.absolute {
+	position: absolute;
+
+	&.top {
+		top: 0;
+	}
+
+	&.left {
+		left: 0;
+	}
+
+	&.right {
+		right: 0;
+	}
+
+	&.bottom {
+		bottom: 0;
+	}
+}
+
+.outline {
+	outline: 1px solid red;
+}
+
+.no-pointer {
+	pointer-events: none;
 }
 
 .unselectable {

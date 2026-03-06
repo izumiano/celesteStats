@@ -1,7 +1,7 @@
 import "./nodeList.css";
 
 import Node from "./node";
-import { nodeIncludes, type NodeStats } from "./nodeTypes";
+import { nodeIncludes, type NodeStats, type NodeStatType } from "./nodeTypes";
 import type { CSSProperties } from "react";
 
 interface NodeListStyle extends CSSProperties {
@@ -28,11 +28,13 @@ export default function NodeList({
 	parentId,
 	stats,
 	expanded,
+	statType,
 	searchQuery,
 }: {
 	parentId: string;
 	stats: NodeStats[] | undefined;
 	expanded: boolean;
+	statType: NodeStatType;
 	searchQuery: string;
 }) {
 	let foundQuery = false;
@@ -58,6 +60,7 @@ export default function NodeList({
 						key={id}
 						node={node}
 						id={id}
+						statType={statType}
 						searchQuery={foundQuery ? "" : searchQuery}
 					/>
 				);

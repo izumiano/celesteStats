@@ -24,6 +24,9 @@ export interface SaveData {
 	timestamp: number;
 }
 
+export const NodeStatTypeArray = ["current", "clear"] as const;
+export type NodeStatType = (typeof NodeStatTypeArray)[number];
+
 export function nodeIncludes(node: NodeStats, query: string): boolean {
 	query = query.toLowerCase();
 

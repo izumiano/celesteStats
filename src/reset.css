@@ -1,8 +1,8 @@
-/* 1. Use a more-intuitive box-sizing model */
-*,
+/* 1. Use a more-intuitive box-sizing model */ *,
 *::before,
 *::after {
 	box-sizing: border-box;
+	padding: 0;
 }
 
 /* 2. Remove default margin */
@@ -63,6 +63,17 @@ h4,
 h5,
 h6 {
 	text-wrap: balance;
+}
+
+button,
+input[type="button"],
+input[type="submit"] {
+	-webkit-appearance: none;
+	appearance: none;
+	border-radius: 0;
+	color: black;
+	border: none;
+	cursor: pointer;
 }
 
 /*

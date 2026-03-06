@@ -1,10 +1,10 @@
 import "./statsPage.css";
 
-import { useId, useRef, useState } from "react";
-import { formatTime } from "../utils";
+import { useId, useState } from "react";
 import useCelesteStats from "./useCelesteStats";
 import NodeList from "./nodeList";
-import { sleepFor } from "../utils";
+import type { NodeStatType } from "./nodeTypes";
+import Header from "./header";
 
 export default function StatsPage({
 	celesteStatsSrc,
@@ -14,41 +14,29 @@ export default function StatsPage({
 	const saveData = useCelesteStats(celesteStatsSrc);
 
 	const [searchQuery, setSearchQuery] = useState("");
-	const searchQueryAbortController = useRef(new AbortController());
+
+	const [statType, setStatType] = useState<NodeStatType>("current");
 
 	const id = useId();
 
 	return (
-		<div className="main">
-			<header>
-				<h1>
-					Total Time:{" "}
-					{saveData ? formatTime(saveData.levelSetStats.timePlayed) : "?"}
-				</h1>
-				<h1>Total Deaths: {saveData?.levelSetStats.deaths ?? "?"}</h1>
-			</header>
-			<label>
-				Search
-				<input
-					onChange={async (event) => {
-						searchQueryAbortController.current.abort();
-						searchQueryAbortController.current = new AbortController();
-						if (
-							(await sleepFor(1000, searchQueryAbortController.current.signal))
-								.wasAborted
-						) {
-							return;
-						}
-						setSearchQuery(event.target.value);
-					}}
-				/>
-			</label>
-			<NodeList
-				parentId={id}
-				stats={saveData?.levelSetStats.children}
-				expanded={true}
-				searchQuery={searchQuery}
+		<>
+			<Header
+				saveData={saveData}
+				setSearchQuery={setSearchQuery}
+				statType={statType}
+				setStatType={setStatType}
 			/>
-		</div>
+
+			<main className="main">
+				<NodeList
+					parentId={id}
+					stats={saveData?.levelSetStats.children}
+					expanded={true}
+					statType={statType}
+					searchQuery={searchQuery}
+				/>
+			</main>
+		</>
 	);
 }

@@ -1,16 +1,13 @@
 .node {
 	--backgroundColor: hsl(235, 12%, 20%);
-	background-color: var(--backgroundColor);
+	background-color: hsl(from var(--backgroundColor) h s 25%);
 	border-radius: 1rem;
 	padding: 0.5rem;
 	border: 1px solid rgb(243, 158, 158);
 
-	--expandedLevel: 0;
-	width: calc(75vw + 5rem * var(--expandedLevel));
+	width: calc(75vw);
 
-	transition:
-		width 1s,
-		background-color 0.3s;
+	transition: background-color 0.3s;
 
 	.node {
 		width: 100%;
@@ -22,7 +19,7 @@
 
 	&.empty {
 		border: 1px solid rgba(255, 255, 255, 0.6);
-		background-color: hsl(from var(--backgroundColor) h s 25%);
+		background-color: var(--backgroundColor);
 	}
 
 	.nodeHeader {
@@ -34,6 +31,10 @@
 			margin: 0 0.5rem;
 
 			transition: rotate 0.2s;
+		}
+
+		.nodeStats {
+			color: rgb(179, 179, 179);
 		}
 	}
 }
