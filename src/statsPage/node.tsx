@@ -24,19 +24,25 @@ export default function Node({
 	const hasChildren = node.children.length > 0;
 
 	const time = (() => {
-		if (statType === "clear") {
-			return node.clearTime;
+		switch (statType) {
+			case "clear":
+				return node.clearTime;
+			case "current":
+				return node.timePlayed;
+			case "diff":
+				return node.timePlayed - node.clearTime;
 		}
-
-		return node.timePlayed;
 	})();
 
 	const deaths = (() => {
-		if (statType === "clear") {
-			return node.clearDeaths;
+		switch (statType) {
+			case "clear":
+				return node.clearDeaths;
+			case "current":
+				return node.deaths;
+			case "diff":
+				return node.deaths - node.clearDeaths;
 		}
-
-		return node.deaths;
 	})();
 
 	return (
@@ -58,11 +64,15 @@ export default function Node({
 					<div className="nodeStats">
 						<div className="flex align-center">
 							<img src={timeIcon} alt="time icon" width={20} height={20} />
+							{statType === "diff" ? "+" : ""}
 							<span>{time != null ? formatTime(time) : "?"}</span>
 						</div>
 						<div className="flex align-center">
 							<img src={deathsIcon} alt="deaths icon" width={20} height={20} />
-							<span>{deaths ?? "?"}</span>
+							<span>
+								{statType === "diff" ? "+" : ""}
+								{deaths ?? "?"}
+							</span>
 						</div>
 					</div>
 				</div>

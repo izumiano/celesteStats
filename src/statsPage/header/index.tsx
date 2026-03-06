@@ -29,11 +29,16 @@ export default function Header({
 			return null;
 		}
 
-		if (statType === "clear") {
-			return saveData.levelSetStats.clearTime;
+		switch (statType) {
+			case "clear":
+				return saveData.levelSetStats.clearTime;
+			case "current":
+				return saveData.levelSetStats.timePlayed;
+			case "diff":
+				return (
+					saveData.levelSetStats.timePlayed - saveData.levelSetStats.clearTime
+				);
 		}
-
-		return saveData.levelSetStats.timePlayed;
 	})();
 
 	const deaths = (() => {
@@ -41,11 +46,16 @@ export default function Header({
 			return null;
 		}
 
-		if (statType === "clear") {
-			return saveData.levelSetStats.clearDeaths;
+		switch (statType) {
+			case "clear":
+				return saveData.levelSetStats.clearDeaths;
+			case "current":
+				return saveData.levelSetStats.deaths;
+			case "diff":
+				return (
+					saveData.levelSetStats.deaths - saveData.levelSetStats.clearDeaths
+				);
 		}
-
-		return saveData.levelSetStats.deaths;
 	})();
 
 	return (
@@ -53,10 +63,12 @@ export default function Header({
 			<h2>
 				<div className="flex align-center">
 					<img src={timeIcon} alt="time icon" width={25} height={25} />
+					{statType === "diff" ? "+" : ""}
 					{time != null ? formatTime(time) : "?"}
 				</div>
 				<div className="flex align-center">
 					<img src={deathsIcon} alt="deaths icon" width={25} height={25} />
+					{statType === "diff" ? "+" : ""}
 					{deaths ?? "?"}
 				</div>
 			</h2>
