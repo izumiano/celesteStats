@@ -167,6 +167,10 @@ export default function useCelesteStats(celesteStatsSrc: string) {
 	const [saveData, setSaveData] = useState<SaveData | null>(getLocalStats());
 
 	useEffect(() => {
+		if (import.meta.env.VITE_DISABLE_STAT_REFRESH === "true") {
+			return;
+		}
+
 		(async () => {
 			const toastId = toast.loading("Refreshing Stats");
 			let isConnected = false;
