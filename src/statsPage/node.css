@@ -14,7 +14,7 @@
 	}
 
 	&.expanded {
-		background-color: rgba(219, 83, 158, 0.5);
+		background-color: rgb(from var(--col-primary) r g b / 0.5);
 	}
 
 	&.empty {
@@ -24,8 +24,11 @@
 
 	.nodeHeader {
 		display: flex;
-		justify-content: space-between;
 		align-items: center;
+
+		> .nodeInfo {
+			flex: 1 1 auto;
+		}
 
 		> img {
 			margin: 0 0.5rem;
@@ -35,6 +38,31 @@
 
 		.nodeStats {
 			color: rgb(179, 179, 179);
+		}
+
+		.nodeTitle {
+			--max-width: 75%;
+
+			font-size: 25px;
+			font-weight: 500;
+
+			background-color: transparent;
+			color: white;
+
+			border: none;
+
+			overflow: hidden;
+			white-space: nowrap;
+			text-overflow: ellipsis;
+
+			max-width: var(--max-width);
+
+			&:is(input) {
+				field-sizing: content;
+				@supports not (field-sizing: content) {
+					width: var(--max-width);
+				}
+			}
 		}
 	}
 }

@@ -3,10 +3,20 @@ import "./node.css";
 import timeIcon from "../assets/time.png";
 import deathsIcon from "../assets/deaths.png";
 
-import { useState } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import NodeList from "./nodeList";
 import { formatTime } from "../utils";
-import type { NodeStats, NodeStatType } from "./nodeTypes";
+import {
+	getChildPaths,
+	getParentPath,
+	type NodeStats,
+	type NodeStatType,
+} from "./nodeTypes";
+import { toast } from "react-toastify";
+import { trace } from "@izumiano/vite-logger";
+import localData from "../localData";
+import LoadingSpinner from "../shared/loadingSpinner";
+import { useCelesteStats } from "./celesteStatsContext";
 
 export default function Node({
 	node,
@@ -19,7 +29,12 @@ export default function Node({
 	statType: NodeStatType;
 	searchQuery: string;
 }) {
+	const { refreshStats } = useCelesteStats();
 	const [expanded, setExpanded] = useState(false);
+	const [loadingState, setLoadingState] = useState<"finished" | "loading">(
+		"finished",
+	);
+	const titleRef = useRef(node.title);
 
 	const hasChildren = node.children.length > 0;
 
@@ -45,6 +60,74 @@ export default function Node({
 		}
 	})();
 
+	const changeTitle = async (newTitle: string) => {
+		if (newTitle === node.title) {
+			return;
+		}
+
+		if (newTitle === "") {
+			toast.error("Title must have at least one character");
+			return;
+		}
+
+		setLoadingState("loading");
+
+		const path = getParentPath(node);
+
+		const oldName = `${path}${node.title}`;
+		const newName = `${path}${newTitle}`;
+		const mapNames = getChildPaths(node);
+
+		trace({ oldName, newName, mapNames });
+
+		const onFail = (message: ReactNode) => {
+			toast.error(
+				<span>
+					Failed changing name from <b>{node.title}</b> to{" "}
+					<b>{titleRef.current}</b>
+					<hr />
+					{message}
+				</span>,
+			);
+			titleRef.current = node.title;
+		};
+
+		fetch(
+			`${localData.getCelesteStatsSrc()}/celesteSaves/database.php?q=changeMapName`,
+			{ method: "POST", body: JSON.stringify({ oldName, newName, mapNames }) },
+		)
+			.then(async (response) => {
+				const body = await response.json();
+
+				setLoadingState("finished");
+
+				if (!response.ok) {
+					if (body.errorType) {
+						onFail(
+							<i>
+								<div>
+									<b>{body.errorType}</b>:
+								</div>
+								{body.errorMessage}
+							</i>,
+						);
+					} else {
+						onFail(
+							<i>
+								<b>{response.status}</b> {response.statusText}
+							</i>,
+						);
+					}
+
+					return;
+				}
+
+				node.title = titleRef.current;
+				refreshStats({ silent: true });
+			})
+			.catch((reason) => onFail(reason));
+	};
+
 	return (
 		<div
 			className={`node ${expanded ? "expanded" : ""} ${hasChildren ? "" : "empty"}`}
@@ -59,8 +142,38 @@ export default function Node({
 				}}
 				className="nodeHeader"
 			>
-				<div>
-					<h2 className="nodeTitle">{node.title}</h2>
+				<div className="nodeInfo">
+					{loadingState === "finished" && !node.isMode ? (
+						<input
+							defaultValue={titleRef.current}
+							className="nodeTitle"
+							onClick={(event) => {
+								event.stopPropagation();
+							}}
+							onChange={(event) => {
+								titleRef.current = event.target.value;
+							}}
+							onKeyDown={(event) => {
+								if (event.key !== "Enter") {
+									return;
+								}
+
+								event.preventDefault();
+								const target = event.currentTarget;
+								target.blur();
+							}}
+							onBlur={(event) => {
+								changeTitle(event.target.value);
+							}}
+						/>
+					) : (
+						<div className="flex">
+							<h2 className="nodeTitle">{titleRef.current}</h2>
+							{loadingState === "loading" && (
+								<LoadingSpinner props={{ size: "1.5rem", centered: true }} />
+							)}
+						</div>
+					)}
 					<div className="nodeStats">
 						<div className="flex align-center">
 							<img src={timeIcon} alt="time icon" width={20} height={20} />

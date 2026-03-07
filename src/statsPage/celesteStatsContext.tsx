@@ -1,5 +1,12 @@
 import { logError } from "@izumiano/vite-logger";
-import { useEffect, useState } from "react";
+import {
+	createContext,
+	useCallback,
+	useContext,
+	useEffect,
+	useState,
+	type ReactNode,
+} from "react";
 import { toast } from "react-toastify";
 import localData from "../localData";
 import type { NodeStats, SaveData } from "./nodeTypes";
@@ -48,9 +55,15 @@ function modeNumberToTitle(mode: number) {
 	}
 }
 
-function recurseNodes(stats: MapStatsResponse[] | LevelSetStatsResponse) {
+function recurseNodes(
+	stats: MapStatsResponse[] | LevelSetStatsResponse,
+	parent: NodeStats | null = null,
+) {
 	const nodeStats: NodeStats = {
 		children: [],
+		parent,
+
+		isMode: false,
 
 		title: "Unknown",
 		completed: true,
@@ -76,12 +89,14 @@ function recurseNodes(stats: MapStatsResponse[] | LevelSetStatsResponse) {
 		for (const [index, stat] of stats.entries()) {
 			const attr = stat["@attributes"];
 
-			const node = statAttributesToNode(attr, modeNumberToTitle(index));
+			const title = modeNumberToTitle(index);
+
+			const node = statAttributesToNode(attr, title, parent);
 			handleNodeStats(nodeStats, node, pushToNodeStats);
 		}
 	} else {
 		for (const [title, stat] of Object.entries(stats)) {
-			const node = recurseNodes(stat);
+			const node = recurseNodes(stat, nodeStats);
 			node.title = title;
 			handleNodeStats(nodeStats, node);
 		}
@@ -127,6 +142,7 @@ function handleNodeStats(
 function statAttributesToNode(
 	attr: MapAttributesResponse,
 	title: string,
+	parent: NodeStats | null,
 ): NodeStats {
 	return {
 		title,
@@ -144,6 +160,8 @@ function statAttributesToNode(
 		fullClear: attr.FullClear === "true",
 		heartGem: attr.HeartGem === "true",
 		singleRunCompleted: attr.SingleRunCompleted === "true",
+		isMode: true,
+		parent,
 		children: [],
 	};
 }
@@ -163,68 +181,124 @@ function getLocalStats() {
 	return { levelSetStats: stats, timestamp: saveData.timestamp };
 }
 
-export default function useCelesteStats(celesteStatsSrc: string) {
+export function useCelesteStats() {
+	const saveDataState = useContext(CelesteStatsContextProvider);
+
+	if (!saveDataState) {
+		throw new Error(
+			"All components that use the graph context must be placed within a GraphContext element.",
+		);
+	}
+
+	return saveDataState;
+}
+
+interface RefreshStatsParams {
+	silent: boolean;
+}
+
+const CelesteStatsContextProvider = createContext<{
+	saveData: SaveData | null;
+	refreshStats: (params: RefreshStatsParams) => void;
+} | null>(null);
+
+export default function CelesteStatsContext({
+	celesteStatsSrc,
+	children,
+}: {
+	celesteStatsSrc: string;
+	children: ReactNode;
+}) {
 	const [saveData, setSaveData] = useState<SaveData | null>(getLocalStats());
 
-	useEffect(() => {
-		if (import.meta.env.VITE_DISABLE_STAT_REFRESH === "true") {
-			return;
-		}
+	const refreshStats = useCallback(
+		({ silent }: RefreshStatsParams = { silent: false }) => {
+			if (import.meta.env.VITE_DISABLE_STAT_REFRESH === "true") {
+				return;
+			}
 
-		(async () => {
-			const toastId = toast.loading("Refreshing Stats");
-			let isConnected = false;
-			const controller = new AbortController();
-			setTimeout(() => {
-				if (!isConnected) {
-					controller.abort();
+			(async () => {
+				let toastId = null;
+				if (!silent) {
+					toastId = toast.loading("Refreshing Stats");
 				}
-			}, 10000);
-
-			fetch(`${celesteStatsSrc}/celesteSaves/celesteSaves.php`, {
-				signal: controller.signal,
-			})
-				.then(async (response) => {
-					isConnected = true;
-
-					if (!response.ok) {
-						const errorBody = await response.text();
-						throw new Error(
-							`HTTP error! status: ${response.status}, message: ${errorBody}`,
-						);
+				let isConnected = false;
+				const controller = new AbortController();
+				setTimeout(() => {
+					if (!isConnected) {
+						controller.abort();
 					}
+				}, 10000);
 
-					const saveData: SaveDataResponse = await response.json();
-
-					const stats = recurseNodes(saveData.levelSetStats);
-					stats.title = "RootNode";
-
-					localData.setLocalStats(JSON.stringify(saveData));
-					setSaveData({ levelSetStats: stats, timestamp: saveData.timestamp });
-
-					toast.update(toastId, {
-						render: "Stats Updated!",
-						type: "success",
-						isLoading: false,
-						autoClose: 3000,
-					});
+				fetch(`${celesteStatsSrc}/celesteSaves/celesteSaves.php`, {
+					signal: controller.signal,
 				})
-				.catch((reason) => {
-					logError(reason);
+					.then(async (response) => {
+						isConnected = true;
 
-					let errorMessage = "Unknown error";
-					if (reason instanceof Error) {
-						errorMessage = reason.message;
-					}
-					toast.update(toastId, {
-						render: `Getting celeste stats failed with error: ${errorMessage}`,
-						type: "error",
-						isLoading: false,
-						autoClose: 10000,
+						if (!response.ok) {
+							const errorBody = await response.text();
+							throw new Error(
+								`HTTP error! status: ${response.status}, message: ${errorBody}`,
+							);
+						}
+
+						const saveData: SaveDataResponse = await response.json();
+
+						const stats = recurseNodes(saveData.levelSetStats);
+						stats.title = "RootNode";
+
+						// exclude 'parent' from saveData to not have a cyclic value
+						const dataToSave = JSON.stringify(saveData, (key, value) => {
+							if (key === "parent") {
+								return undefined;
+							}
+							return value;
+						});
+
+						localData.setLocalStats(dataToSave);
+						setSaveData({
+							levelSetStats: stats,
+							timestamp: saveData.timestamp,
+						});
+
+						if (toastId != null) {
+							toast.update(toastId, {
+								render: "Stats Updated!",
+								type: "success",
+								isLoading: false,
+								autoClose: 3000,
+							});
+						}
+					})
+					.catch((reason) => {
+						logError(reason);
+
+						let errorMessage = "Unknown error";
+						if (reason instanceof Error) {
+							errorMessage = reason.message;
+						}
+						if (toastId != null) {
+							toast.update(toastId, {
+								render: `Getting celeste stats failed with error: ${errorMessage}`,
+								type: "error",
+								isLoading: false,
+								autoClose: 10000,
+							});
+						}
 					});
-				});
-		})();
-	}, [celesteStatsSrc]);
+			})();
+		},
+		[celesteStatsSrc],
+	);
 
-	return saveData;
+	useEffect(() => {
+		refreshStats();
+	}, [refreshStats]);
+
+	return (
+		<CelesteStatsContextProvider.Provider value={{ saveData, refreshStats }}>
+			{saveData ? children : null}
+		</CelesteStatsContextProvider.Provider>
+	);
 }
