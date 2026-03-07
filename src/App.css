@@ -1,6 +1,8 @@
 :root {
 	--toastify-toast-width: 25rem;
 
+	--col-primary: rgb(219, 83, 158);
+	--col-secondary: rgb(168, 165, 226);
 	--background-color: hsl(225, 14%, 11%);
 	background-color: var(--background-color);
 

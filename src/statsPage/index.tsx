@@ -1,17 +1,13 @@
 import "./statsPage.css";
 
 import { useId, useState } from "react";
-import useCelesteStats from "./useCelesteStats";
+import { useCelesteStats } from "./celesteStatsContext";
 import NodeList from "./nodeList";
 import type { NodeStatType } from "./nodeTypes";
 import Header from "./header";
 
-export default function StatsPage({
-	celesteStatsSrc,
-}: {
-	celesteStatsSrc: string;
-}) {
-	const saveData = useCelesteStats(celesteStatsSrc);
+export default function StatsPage() {
+	const { saveData } = useCelesteStats();
 
 	const [searchQuery, setSearchQuery] = useState("");
 
