@@ -280,7 +280,13 @@ export default function CelesteStatsContext({
 						}
 						if (toastId != null) {
 							toast.update(toastId, {
-								render: `Getting celeste stats failed with error: ${errorMessage}`,
+								render: (
+									<span>
+										<b>Getting celeste stats failed</b>
+										<hr />
+										<i>{errorMessage}</i>
+									</span>
+								),
 								type: "error",
 								isLoading: false,
 								autoClose: 10000,

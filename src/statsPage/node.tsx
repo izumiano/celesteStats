@@ -3,7 +3,7 @@ import "./node.css";
 import timeIcon from "../assets/time.png";
 import deathsIcon from "../assets/deaths.png";
 
-import { useRef, useState, type ReactNode } from "react";
+import React, { useRef, useState, type ReactNode } from "react";
 import NodeList from "./nodeList";
 import { formatTime } from "../utils";
 import {
@@ -80,13 +80,39 @@ export default function Node({
 
 		trace({ oldName, newName, mapNames });
 
-		const onFail = (message: ReactNode) => {
+		const onFail = (reason: unknown) => {
+			setLoadingState("finished");
+
+			let message: ReactNode;
+
+			if (React.isValidElement(reason)) {
+				message = reason;
+			} else if (reason instanceof Error) {
+				message = (
+					<>
+						<div>
+							<b>{reason.name}</b>:
+						</div>
+						{reason.message}
+					</>
+				);
+			} else {
+				message = (
+					<>
+						<div>
+							<b>Unknown Error</b>:
+						</div>
+						{JSON.stringify(reason)}
+					</>
+				);
+			}
+
 			toast.error(
 				<span>
 					Failed changing name from <b>{node.title}</b> to{" "}
 					<b>{titleRef.current}</b>
 					<hr />
-					{message}
+					<i>{message}</i>
 				</span>,
 			);
 			titleRef.current = node.title;
@@ -99,17 +125,15 @@ export default function Node({
 			.then(async (response) => {
 				const body = await response.json();
 
-				setLoadingState("finished");
-
 				if (!response.ok) {
 					if (body.errorType) {
 						onFail(
-							<i>
+							<>
 								<div>
 									<b>{body.errorType}</b>:
 								</div>
 								{body.errorMessage}
-							</i>,
+							</>,
 						);
 					} else {
 						onFail(
@@ -121,6 +145,8 @@ export default function Node({
 
 					return;
 				}
+
+				setLoadingState("finished");
 
 				node.title = titleRef.current;
 				refreshStats({ silent: true });
