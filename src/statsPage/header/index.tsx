@@ -102,6 +102,7 @@ export default function Header({
 							event.preventDefault();
 							if (searchInputRef.current) {
 								searchInputRef.current.value = "";
+								searchInputRef.current.focus();
 							}
 							setSearchQuery("");
 							setShowRemoveSearchButton(false);
