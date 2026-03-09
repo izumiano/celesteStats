@@ -1,7 +1,7 @@
 .nodeList {
 	display: grid;
 	grid-template-columns: max-content;
-	--defaultNodeHeight: 102px;
+	--defaultNodeHeight: 103.5px;
 	--gap: 1rem;
 	gap: var(--gap);
 

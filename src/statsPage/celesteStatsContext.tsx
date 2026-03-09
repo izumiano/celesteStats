@@ -64,6 +64,7 @@ function recurseNodes(
 		parent,
 
 		isMode: false,
+		isChapter: false,
 
 		title: "Unknown",
 		completed: true,
@@ -98,6 +99,8 @@ function recurseNodes(
 		for (const [title, stat] of Object.entries(stats)) {
 			const node = recurseNodes(stat, nodeStats);
 			node.title = title;
+			node.isChapter = node.children[0]?.isMode ?? true;
+
 			handleNodeStats(nodeStats, node);
 		}
 	}
@@ -161,6 +164,7 @@ function statAttributesToNode(
 		heartGem: attr.HeartGem === "true",
 		singleRunCompleted: attr.SingleRunCompleted === "true",
 		isMode: true,
+		isChapter: false,
 		parent,
 		children: [],
 	};

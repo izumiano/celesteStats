@@ -2,15 +2,23 @@
 	--backgroundColor: hsl(235, 12%, 20%);
 	background-color: hsl(from var(--backgroundColor) h s 25%);
 	border-radius: 1rem;
-	padding: 0.5rem;
+	--node-padding: 0.5rem;
+	padding: var(--node-padding);
 	border: 1px solid rgb(243, 158, 158);
 
 	width: 75vw;
 
 	transition: background-color 0.3s;
 
+	--del-btn-size: 2rem;
+	--del-btn-margin: 0.62rem;
+
 	.node {
 		width: 100%;
+
+		&.deletable {
+			width: calc(100% - var(--del-btn-size) - var(--node-padding));
+		}
 	}
 
 	&.expanded {
@@ -25,6 +33,7 @@
 	.nodeHeader {
 		display: flex;
 		align-items: center;
+		position: relative;
 
 		> .nodeInfo {
 			flex: 1 1 auto;
@@ -34,6 +43,30 @@
 			margin: 0 0.5rem;
 
 			transition: rotate 0.2s;
+		}
+
+		> .deleteDropdown {
+			background-color: transparent;
+			position: absolute;
+
+			--padding: 0.7rem;
+
+			width: calc(var(--del-btn-size) + var(--padding));
+			height: calc(var(--del-btn-size) + var(--padding));
+
+			right: calc(
+				3px /*offset so dropdown outline does not get clipped*/ -
+				var(--del-btn-size) -
+				var(--node-padding) -
+				var(--del-btn-margin)
+			);
+
+			.deleteButton {
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				height: 100%;
+			}
 		}
 
 		.nodeStats {

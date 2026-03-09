@@ -3,20 +3,13 @@ import "./node.css";
 import timeIcon from "../assets/time.png";
 import deathsIcon from "../assets/deaths.png";
 
-import React, { useRef, useState, type ReactNode } from "react";
+import { useRef, useState } from "react";
 import NodeList from "./nodeList";
 import { formatTime } from "../utils";
-import {
-	getChildPaths,
-	getParentPath,
-	type NodeStats,
-	type NodeStatType,
-} from "./nodeTypes";
-import { toast } from "react-toastify";
-import { trace } from "@izumiano/vite-logger";
-import localData from "../localData";
+import { tryChangeTitle, type NodeStats, type NodeStatType } from "./nodeTypes";
 import LoadingSpinner from "../shared/loadingSpinner";
 import { useCelesteStats } from "./celesteStatsContext";
+import DeleteButton from "./header/deleteButton";
 
 export default function Node({
 	node,
@@ -31,9 +24,10 @@ export default function Node({
 }) {
 	const { refreshStats } = useCelesteStats();
 	const [expanded, setExpanded] = useState(false);
-	const [loadingState, setLoadingState] = useState<"finished" | "loading">(
-		"finished",
-	);
+	const [renameLoadingState, setRenameLoadingState] = useState<
+		"finished" | "loading"
+	>("finished");
+
 	const titleRef = useRef(node.title);
 
 	const hasChildren = node.children.length > 0;
@@ -60,103 +54,25 @@ export default function Node({
 		}
 	})();
 
-	const changeTitle = async (newTitle: string) => {
-		if (newTitle === node.title) {
-			return;
-		}
+	const changeTitle = async (title: string) => {
+		setRenameLoadingState("loading");
 
-		if (newTitle === "") {
-			toast.error("Title must have at least one character");
-			return;
-		}
+		const success = await tryChangeTitle(node, title);
 
-		setLoadingState("loading");
-
-		const path = getParentPath(node);
-
-		const oldName = `${path}${node.title}`;
-		const newName = `${path}${newTitle}`;
-		const mapNames = getChildPaths(node);
-
-		trace({ oldName, newName, mapNames });
-
-		const onFail = (reason: unknown) => {
-			setLoadingState("finished");
-
-			let message: ReactNode;
-
-			if (React.isValidElement(reason)) {
-				message = reason;
-			} else if (reason instanceof Error) {
-				message = (
-					<>
-						<div>
-							<b>{reason.name}</b>:
-						</div>
-						{reason.message}
-					</>
-				);
-			} else {
-				message = (
-					<>
-						<div>
-							<b>Unknown Error</b>:
-						</div>
-						{JSON.stringify(reason)}
-					</>
-				);
-			}
-
-			toast.error(
-				<span>
-					Failed changing name from <b>{node.title}</b> to{" "}
-					<b>{titleRef.current}</b>
-					<hr />
-					<i>{message}</i>
-				</span>,
-			);
+		if (success) {
+			refreshStats({ silent: true });
+		} else {
 			titleRef.current = node.title;
-		};
+		}
 
-		fetch(
-			`${localData.getCelesteStatsSrc()}/celesteSaves/database.php?q=changeMapName`,
-			{ method: "POST", body: JSON.stringify({ oldName, newName, mapNames }) },
-		)
-			.then(async (response) => {
-				const body = await response.json();
-
-				if (!response.ok) {
-					if (body.errorType) {
-						onFail(
-							<>
-								<div>
-									<b>{body.errorType}</b>:
-								</div>
-								{body.errorMessage}
-							</>,
-						);
-					} else {
-						onFail(
-							<i>
-								<b>{response.status}</b> {response.statusText}
-							</i>,
-						);
-					}
-
-					return;
-				}
-
-				setLoadingState("finished");
-
-				node.title = titleRef.current;
-				refreshStats({ silent: true });
-			})
-			.catch((reason) => onFail(reason));
+		setRenameLoadingState("finished");
 	};
+
+	const canBeDeleted = !node.isChapter && !node.isMode;
 
 	return (
 		<div
-			className={`node ${expanded ? "expanded" : ""} ${hasChildren ? "" : "empty"}`}
+			className={`node ${expanded ? "expanded" : ""} ${hasChildren ? "" : "empty"} ${canBeDeleted ? "deletable" : ""}`}
 		>
 			<div
 				onClick={() => {
@@ -169,12 +85,12 @@ export default function Node({
 				className="nodeHeader"
 			>
 				<div className="nodeInfo">
-					{loadingState === "finished" && !node.isMode ? (
+					{renameLoadingState === "finished" && !node.isMode ? (
 						<input
 							defaultValue={titleRef.current}
 							className="nodeTitle"
 							onClick={(event) => {
-								event.stopPropagation();
+								event.stopPropagation(); // dont expand node if clicking here
 							}}
 							onChange={(event) => {
 								titleRef.current = event.target.value;
@@ -195,7 +111,7 @@ export default function Node({
 					) : (
 						<div className="flex">
 							<h2 className="nodeTitle">{titleRef.current}</h2>
-							{loadingState === "loading" && (
+							{renameLoadingState === "loading" && (
 								<LoadingSpinner props={{ size: "1.5rem", centered: true }} />
 							)}
 						</div>
@@ -223,6 +139,9 @@ export default function Node({
 						className="unselectable"
 						style={{ rotate: expanded ? "180deg" : "0deg" }}
 					/>
+				)}
+				{canBeDeleted && (
+					<DeleteButton node={node} refreshStats={refreshStats} />
 				)}
 			</div>
 

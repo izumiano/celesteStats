@@ -3,9 +3,20 @@
 
 	--col-primary: rgb(219, 83, 158);
 	--col-secondary: rgb(168, 165, 226);
-	--background-color: hsl(225, 14%, 11%);
-	background-color: var(--background-color);
+	--col-background: hsl(225, 14%, 11%);
+	--col-fail: rgb(236, 73, 61);
+	--col-warn: rgb(224, 236, 61);
 
+	--large-padding: 1.7rem;
+	--padding: 0.8rem;
+	--small-padding: 0.3rem;
+
+	--large-margin: 2rem;
+	--margin: 1rem;
+	--medium-margin: 0.5rem;
+	--small-margin: 0.3rem;
+
+	background-color: var(--col-background);
 	color: rgb(236, 236, 236);
 
 	font-family: renogare, monospace;
@@ -17,7 +28,7 @@
 }
 
 label:has(> input[type="text"]) {
-	background-color: hsl(from var(--background-color) h s 40% / 0.9);
+	background-color: hsl(from var(--col-background) h s 40% / 0.9);
 	border-radius: 0.5rem;
 	padding: 0 0.5rem 0 0;
 	cursor: text;
@@ -55,6 +66,10 @@ label:has(> input[type="text"]) {
 
 .space-between {
 	justify-content: space-between;
+}
+
+.space-evenly {
+	justify-content: space-evenly;
 }
 
 .flex-wrap {
@@ -95,4 +110,104 @@ label:has(> input[type="text"]) {
 
 .unselectable {
 	user-select: none;
+}
+
+.large-padding {
+	padding: var(--large-padding);
+}
+
+.padding {
+	padding: var(--padding);
+}
+
+.small-padding {
+	padding: var(--small-padding);
+}
+
+.large-margin {
+	margin: var(--large-margin);
+}
+
+.margin {
+	margin: var(--margin);
+}
+
+.margin-top {
+	margin-top: var(--margin);
+}
+
+.medium-margin {
+	margin: var(--medium-margin);
+}
+
+.small-margin {
+	margin: var(--small-margin);
+}
+
+.large-margin-horizontal {
+	margin-left: var(--large-margin);
+	margin-right: var(--large-margin);
+}
+
+.margin-horizontal {
+	margin-left: var(--margin);
+	margin-right: var(--margin);
+}
+
+.medium-margin-horizontal {
+	margin-left: var(--medium-margin);
+	margin-right: var(--medium-margin);
+}
+
+.small-margin-horizontal {
+	margin-left: var(--small-margin);
+	margin-right: var(--small-margin);
+}
+
+.large-margin-vertical {
+	margin-top: var(--large-margin);
+	margin-bottom: var(--large-margin);
+}
+
+.margin-vertical {
+	margin-top: var(--margin);
+	margin-bottom: var(--margin);
+}
+
+.medium-margin-vertical {
+	margin-top: var(--medium-margin);
+	margin-bottom: var(--medium-margin);
+}
+
+.small-margin-vertical {
+	margin-top: var(--small-margin);
+	margin-bottom: var(--small-margin);
+}
+
+.gap {
+	gap: var(--margin);
+}
+
+.mediumGap {
+	gap: var(--medium-margin);
+}
+
+.shimmerBackground {
+	box-shadow: inset 0 0 4rem rgba(146, 125, 125, 0.3);
+}
+
+.transparent {
+	opacity: 0;
+}
+
+.transparent25 {
+	opacity: 0.25;
+}
+
+.transparent50 {
+	opacity: 0.5;
+}
+
+.transparent75 {
+	opacity: 0.75;
 }

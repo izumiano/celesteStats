@@ -2,7 +2,7 @@
 	position: sticky;
 	top: 0;
 
-	background-color: hsl(from var(--background-color) h s l / 0.85);
+	background-color: hsl(from var(--col-background) h s l / 0.85);
 
 	z-index: 1;
 }

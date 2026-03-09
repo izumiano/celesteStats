@@ -1,0 +1,27 @@
+.deleteConfirmation {
+	width: clamp(2rem, 30vw, 50rem);
+	text-align: center;
+
+	button {
+		background-color: var(--col-secondary);
+
+		width: 6rem;
+		border-radius: max(100vw, 100vh);
+		outline: 2px solid transparent;
+		outline-offset: 2px;
+
+		box-shadow: 0 0 10px rgba(97, 97, 97, 0.5);
+
+		transition: outline-color 0.25s;
+
+		&:hover {
+			outline-color: white;
+		}
+
+		&.confirm {
+			background-color: var(--col-fail);
+			color: white;
+			box-shadow: 0 0 10px rgb(from var(--col-fail) r g b / 0.75);
+		}
+	}
+}
