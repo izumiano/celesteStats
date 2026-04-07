@@ -54,7 +54,7 @@ function recurseParentPath(node: NodeStats, pathArr: string[] = []): string[] {
 		return [];
 	}
 
-	pathArr.push(parent.title);
+	pathArr.push(escapeCharacters(parent.title));
 
 	recurseParentPath(parent, pathArr);
 
@@ -87,7 +87,7 @@ export function getChildPaths(
 		}
 		allWereMode = false;
 
-		getChildPaths(child, `${path}/${child.title}`, pathArr);
+		getChildPaths(child, `${path}/${escapeCharacters(child.title)}`, pathArr);
 	}
 
 	if (allWereMode) {
@@ -97,6 +97,16 @@ export function getChildPaths(
 	return pathArr;
 }
 
+const charactersToEscape = ["/"];
+function escapeCharacters(str: string) {
+	str = str.replaceAll("\\", "\\\\"); // '\\' has to happen first
+	for (const char of charactersToEscape) {
+		str = str.replaceAll(char, `\\${char}`);
+	}
+
+	return str;
+}
+
 async function tryChangeTitleInternal(
 	node: NodeStats,
 	title: string,
@@ -104,13 +114,18 @@ async function tryChangeTitleInternal(
 ): Promise<boolean> {
 	const path = getParentPath(node);
 
+	const nodeTitle = escapeCharacters(node.title);
+	title = escapeCharacters(title);
+
+	console.log({ title, nodeTitle });
+
 	const oldName = (() => {
 		if (path === "") {
-			return node.title;
-		} else if (node.title === "") {
+			return nodeTitle;
+		} else if (nodeTitle === "") {
 			return path;
 		}
-		return `${path}/${node.title}`;
+		return `${path}/${nodeTitle}`;
 	})();
 	const newName = (() => {
 		if (path === "") {
