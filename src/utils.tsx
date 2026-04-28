@@ -289,5 +289,5 @@ export function formatTime(ticks: number) {
 	const milliseconds = (seconds - secondsInt) * 1000;
 	const millisecondsInt = Math.floor(milliseconds);
 
-	return `${hoursInt}:${addLeadingZeroes(minutesInt, 2)}:${addLeadingZeroes(secondsInt, 2)}:${addLeadingZeroes(millisecondsInt, 3)}`;
+	return `${hoursInt}:${addLeadingZeroes(minutesInt, 2)}:${addLeadingZeroes(secondsInt, 2)}.${addLeadingZeroes(millisecondsInt, 3)}`;
 }
