@@ -2,13 +2,19 @@ import dropdownIcon from "../assets/dropdown.png";
 import "./node.css";
 import timeIcon from "../assets/time.png";
 import deathsIcon from "../assets/deaths.png";
+import tabIcon from "../assets/tab.png";
 
 import { useRef, useState } from "react";
 import NodeList from "./nodeList";
 import { formatTime } from "../utils";
-import { tryChangeTitle, type NodeStats, type NodeStatType } from "./nodeTypes";
+import {
+	getParentPath,
+	tryChangeTitle,
+	type NodeStats,
+	type NodeStatType,
+} from "./nodeTypes";
 import LoadingSpinner from "../shared/loadingSpinner";
-import { useCelesteStats } from "./celesteStatsContext";
+import { useCelesteStats } from "../shared/celesteStatsContext";
 import DeleteButton from "./header/deleteButton";
 
 export default function Node({
@@ -85,37 +91,57 @@ export default function Node({
 				className="nodeHeader"
 			>
 				<div className="nodeInfo">
-					{renameLoadingState === "finished" && !node.isMode ? (
-						<input
-							defaultValue={titleRef.current}
-							className="nodeTitle"
-							onClick={(event) => {
-								event.stopPropagation(); // dont expand node if clicking here
-							}}
-							onChange={(event) => {
-								titleRef.current = event.target.value;
-							}}
-							onKeyDown={(event) => {
-								if (event.key !== "Enter") {
-									return;
-								}
+					<div className="flex alignItems">
+						{renameLoadingState === "finished" && !node.isMode ? (
+							<input
+								defaultValue={titleRef.current}
+								className="nodeTitle"
+								onClick={(event) => {
+									event.stopPropagation(); // dont expand node if clicking here
+								}}
+								onChange={(event) => {
+									titleRef.current = event.target.value;
+								}}
+								onKeyDown={(event) => {
+									if (event.key !== "Enter") {
+										return;
+									}
 
-								event.preventDefault();
-								const target = event.currentTarget;
-								target.blur();
-							}}
-							onBlur={(event) => {
-								changeTitle(event.target.value);
-							}}
-						/>
-					) : (
-						<div className="flex">
-							<h2 className="nodeTitle">{titleRef.current}</h2>
-							{renameLoadingState === "loading" && (
-								<LoadingSpinner props={{ size: "1.5rem", centered: true }} />
+									event.preventDefault();
+									const target = event.currentTarget;
+									target.blur();
+								}}
+								onBlur={(event) => {
+									changeTitle(event.target.value);
+								}}
+							/>
+						) : (
+							<div className="flex">
+								<h2 className="nodeTitle">{titleRef.current}</h2>
+								{renameLoadingState === "loading" && (
+									<LoadingSpinner props={{ size: "1.5rem", centered: true }} />
+								)}
+							</div>
+						)}
+						<div
+							className="mapLinks flex"
+							onClick={(event) => event.stopPropagation()}
+						>
+							{node.sid && (
+								<a
+									href={`/celesteStats/maps/?path=${[getParentPath(node), node.title].filter((segment) => !!segment).join("/")}`}
+									className="flex mapLink"
+								>
+									<img
+										src={tabIcon}
+										alt="open in new tab"
+										width={20}
+										height={20}
+									/>
+								</a>
 							)}
 						</div>
-					)}
+					</div>
 					<div className="nodeStats">
 						<div className="flex align-center">
 							<img src={timeIcon} alt="time icon" width={20} height={20} />

@@ -1,7 +1,7 @@
 import "./statsPage.css";
 
 import { useId, useState } from "react";
-import { useCelesteStats } from "./celesteStatsContext";
+import { useCelesteStats } from "../shared/celesteStatsContext";
 import NodeList from "./nodeList";
 import type { NodeStatType } from "./nodeTypes";
 import Header from "./header";

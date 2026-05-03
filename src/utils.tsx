@@ -301,3 +301,21 @@ export function tryCatch<TReturn>(
 		return { failed: true, error };
 	}
 }
+
+export function addEruda() {
+	if (import.meta.env.DEV) {
+		const matches = window.location.href.match(
+			/(\?|&)console(?:=(?<config>show|hide))?/,
+		);
+		if (matches) {
+			import("eruda").then((_eruda) => {
+				const eruda = _eruda.default;
+				eruda.init();
+
+				if (matches.groups?.config === "show") {
+					eruda.show();
+				}
+			});
+		}
+	}
+}

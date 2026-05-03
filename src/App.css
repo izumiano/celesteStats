@@ -58,6 +58,10 @@ label:has(> input[type="text"]) {
 
 .flex {
 	display: flex;
+
+	&.alignItems {
+		align-items: center;
+	}
 }
 
 .align-center {
@@ -118,6 +122,14 @@ label:has(> input[type="text"]) {
 
 .padding {
 	padding: var(--padding);
+}
+
+.padLeft {
+	padding-left: var(--padding);
+}
+
+.padRight {
+	padding-right: var(--padding);
 }
 
 .small-padding {

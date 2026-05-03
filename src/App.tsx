@@ -6,7 +6,7 @@ import "./App.css";
 import { useState } from "react";
 import localData from "./localData";
 import CelesteStatsSrcPage from "./celesteStatsSrcPage";
-import CelesteStatsContext from "./statsPage/celesteStatsContext";
+import CelesteStatsContext from "./shared/celesteStatsContext";
 
 export default function App() {
 	const [celesteStatsSrc, setCelesteStatsSrc] = useState(

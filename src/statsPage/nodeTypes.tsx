@@ -24,6 +24,7 @@ export interface NodeStats {
 
 	isMode: boolean;
 	isChapter: boolean;
+	sid?: string;
 
 	parent: NodeStats | null;
 	children: NodeStats[];

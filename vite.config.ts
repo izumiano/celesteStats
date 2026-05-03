@@ -30,6 +30,7 @@ export default defineConfig(({ mode }) => {
 				input: {
 					main: resolve(__dirname, "index.html"),
 					resetStats: resolve(__dirname, "resetStats/index.html"),
+					maps: resolve(__dirname, "maps/index.html"),
 				},
 				output: {
 					// ==For GitHub Pages==

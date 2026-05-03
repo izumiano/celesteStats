@@ -74,8 +74,6 @@
 		}
 
 		.nodeTitle {
-			--max-width: 75%;
-
 			font-size: 25px;
 			font-weight: 500;
 
@@ -88,13 +86,24 @@
 			white-space: nowrap;
 			text-overflow: ellipsis;
 
-			max-width: var(--max-width);
+			max-width: 100%;
 
 			&:is(input) {
 				field-sizing: content;
 				@supports not (field-sizing: content) {
-					width: var(--max-width);
+					width: 100%;
 				}
+			}
+		}
+
+		.mapLinks {
+			&:has(*) {
+				padding-left: var(--padding);
+				padding-right: var(--padding);
+			}
+
+			@supports not (field-sizing: content) {
+				order: -1;
 			}
 		}
 	}

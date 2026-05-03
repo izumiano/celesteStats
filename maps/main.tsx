@@ -1,14 +1,14 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import "./index.css";
-import App from "./App.tsx";
-import { addEruda } from "./utils.tsx";
+import "../src/index.css";
+import MapsPage from "../src/mapsPage";
+import { addEruda } from "../src/utils";
 
 addEruda();
 
 // biome-ignore lint/style/noNonNullAssertion: <root will always exist>
 createRoot(document.getElementById("root")!).render(
 	<StrictMode>
-		<App />
+		<MapsPage />
 	</StrictMode>,
 );

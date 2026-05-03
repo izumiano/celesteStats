@@ -9,7 +9,7 @@ import {
 } from "react";
 import { toast } from "react-toastify";
 import localData from "../localData";
-import type { NodeStats, SaveData } from "./nodeTypes";
+import type { NodeStats, SaveData } from "../statsPage/nodeTypes";
 import { tryCatch } from "../utils";
 
 interface MapAttributesResponse {
@@ -91,13 +91,18 @@ function _recurseNodesImpl(
 		singleRunCompleted: true,
 	};
 
-	const modeStats = stats.modes;
+	const modesStats = stats.modes;
+	const sid = stats.sid;
 
 	// is mode stats
-	if (Array.isArray(modeStats)) {
-		const pushToNodeStats = modeStats.length > 1;
+	if (Array.isArray(modesStats) && typeof sid === "string") {
+		if (parent) {
+			nodeStats.sid = sid;
+		}
 
-		for (const [index, stat] of modeStats.entries()) {
+		const pushToNodeStats = modesStats.length > 1;
+
+		for (const [index, stat] of modesStats.entries()) {
 			const attr = stat["@attributes"];
 
 			const title = modeNumberToTitle(index);
@@ -223,9 +228,11 @@ const CelesteStatsContextProvider = createContext<{
 
 export default function CelesteStatsContext({
 	celesteStatsSrc,
+	refreshStats: shouldRefreshStats,
 	children,
 }: {
 	celesteStatsSrc: string;
+	refreshStats?: boolean;
 	children: ReactNode;
 }) {
 	const [saveData, setSaveData] = useState<SaveData>(getLocalStats());
@@ -321,9 +328,11 @@ export default function CelesteStatsContext({
 		[celesteStatsSrc],
 	);
 
+	shouldRefreshStats ??= true;
+
 	useEffect(() => {
-		refreshStats();
-	}, [refreshStats]);
+		shouldRefreshStats && refreshStats();
+	}, [refreshStats, shouldRefreshStats]);
 
 	return (
 		<CelesteStatsContextProvider.Provider value={{ saveData, refreshStats }}>

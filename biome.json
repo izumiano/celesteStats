@@ -8,6 +8,8 @@
 	"files": {
 		"includes": [
 			"src/**",
+			"maps/**",
+			"resetStats/**",
 			"package.json",
 			"tsconfig.*.json",
 			"tsconfig.json",
