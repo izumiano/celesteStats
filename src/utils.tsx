@@ -291,3 +291,13 @@ export function formatTime(ticks: number) {
 
 	return `${hoursInt}:${addLeadingZeroes(minutesInt, 2)}:${addLeadingZeroes(secondsInt, 2)}:${addLeadingZeroes(millisecondsInt, 3)}`;
 }
+
+export function tryCatch<TReturn>(
+	func: () => TReturn,
+): { failed: false; value: TReturn } | { failed: true; error: unknown } {
+	try {
+		return { failed: false, value: func() };
+	} catch (error) {
+		return { failed: true, error };
+	}
+}

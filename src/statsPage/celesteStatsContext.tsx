@@ -10,6 +10,7 @@ import {
 import { toast } from "react-toastify";
 import localData from "../localData";
 import type { NodeStats, SaveData } from "./nodeTypes";
+import { tryCatch } from "../utils";
 
 interface MapAttributesResponse {
 	Completed: "true" | "false";
@@ -57,6 +58,12 @@ function modeNumberToTitle(mode: number) {
 }
 
 function recurseNodes(
+	stats: LevelSetStatsResponse,
+): { failed: false; value: NodeStats } | { failed: true; error: unknown } {
+	return tryCatch(() => _recurseNodesImpl(stats));
+}
+
+function _recurseNodesImpl(
 	stats: ChapterStatsResponse | LevelSetStatsResponse,
 	parent: NodeStats | null = null,
 ) {
@@ -100,7 +107,7 @@ function recurseNodes(
 		}
 	} else {
 		for (const [title, stat] of Object.entries(stats)) {
-			const node = recurseNodes(stat, nodeStats);
+			const node = _recurseNodesImpl(stat, nodeStats);
 			node.title = title;
 			node.isChapter = node.children[0]?.isMode ?? true;
 
@@ -177,14 +184,19 @@ function getLocalStats() {
 	const saveDataStr = localData.getLocalStats();
 
 	if (saveDataStr == null) {
-		return null;
+		return {};
 	}
 
 	const saveData: SaveDataResponse = JSON.parse(saveDataStr);
 
-	const stats = recurseNodes(saveData.levelSetStats);
-	stats.title = "RootNode";
+	const statsResult = recurseNodes(saveData.levelSetStats);
 
+	if (statsResult.failed) {
+		return {};
+	}
+
+	const stats = statsResult.value;
+	stats.title = "RootNode";
 	return { levelSetStats: stats, timestamp: saveData.timestamp };
 }
 
@@ -205,7 +217,7 @@ interface RefreshStatsParams {
 }
 
 const CelesteStatsContextProvider = createContext<{
-	saveData: SaveData | null;
+	saveData: SaveData;
 	refreshStats: (params: RefreshStatsParams) => void;
 } | null>(null);
 
@@ -216,7 +228,7 @@ export default function CelesteStatsContext({
 	celesteStatsSrc: string;
 	children: ReactNode;
 }) {
-	const [saveData, setSaveData] = useState<SaveData | null>(getLocalStats());
+	const [saveData, setSaveData] = useState<SaveData>(getLocalStats());
 
 	const refreshStats = useCallback(
 		({ silent }: RefreshStatsParams = { silent: false }) => {
@@ -252,7 +264,11 @@ export default function CelesteStatsContext({
 
 						const saveData: SaveDataResponse = await response.json();
 
-						const stats = recurseNodes(saveData.levelSetStats);
+						const statsResult = recurseNodes(saveData.levelSetStats);
+						if (statsResult.failed) {
+							throw statsResult.error;
+						}
+						const stats = statsResult.value;
 						stats.title = "RootNode";
 
 						// exclude 'parent' from saveData to not have a cyclic value

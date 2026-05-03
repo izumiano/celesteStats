@@ -25,13 +25,13 @@ export default function Header({
 	const [showRemoveSearchButton, setShowRemoveSearchButton] = useState(false);
 
 	const time = (() => {
-		if (!saveData) {
+		if (!saveData?.levelSetStats) {
 			return null;
 		}
 
 		switch (statType) {
 			case "clear":
-				return saveData.levelSetStats.clearTime;
+				return saveData.levelSetStats?.clearTime;
 			case "current":
 				return saveData.levelSetStats.timePlayed;
 			case "diff":
@@ -42,7 +42,7 @@ export default function Header({
 	})();
 
 	const deaths = (() => {
-		if (!saveData) {
+		if (!saveData?.levelSetStats) {
 			return null;
 		}
 

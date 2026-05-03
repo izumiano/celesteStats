@@ -27,7 +27,7 @@ export default function StatsPage() {
 			<main className="main">
 				<NodeList
 					parentId={id}
-					stats={saveData?.levelSetStats.children}
+					stats={saveData?.levelSetStats?.children}
 					expanded={true}
 					statType={statType}
 					searchQuery={searchQuery}

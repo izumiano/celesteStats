@@ -30,8 +30,8 @@ export interface NodeStats {
 }
 
 export interface SaveData {
-	levelSetStats: NodeStats;
-	timestamp: number;
+	levelSetStats?: NodeStats;
+	timestamp?: number;
 }
 
 export const NodeStatTypeArray = ["current", "clear", "diff"] as const;
