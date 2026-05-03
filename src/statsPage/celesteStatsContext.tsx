@@ -28,12 +28,13 @@ interface MapAttributesResponse {
 	SingleRunCompleted: "true" | "false";
 }
 
-interface MapStatsResponse {
-	"@attributes": MapAttributesResponse;
+interface ChapterStatsResponse {
+	sid: string;
+	modes: { "@attributes": MapAttributesResponse }[];
 }
 
 type LevelSetStatsResponse = {
-	[key: string]: LevelSetStatsResponse | MapStatsResponse[];
+	[key: string]: LevelSetStatsResponse | ChapterStatsResponse;
 };
 
 interface SaveDataResponse {
@@ -56,7 +57,7 @@ function modeNumberToTitle(mode: number) {
 }
 
 function recurseNodes(
-	stats: MapStatsResponse[] | LevelSetStatsResponse,
+	stats: ChapterStatsResponse | LevelSetStatsResponse,
 	parent: NodeStats | null = null,
 ) {
 	const nodeStats: NodeStats = {
@@ -83,11 +84,13 @@ function recurseNodes(
 		singleRunCompleted: true,
 	};
 
-	// is mode stats
-	if (Array.isArray(stats)) {
-		const pushToNodeStats = stats.length > 1;
+	const modeStats = stats.modes;
 
-		for (const [index, stat] of stats.entries()) {
+	// is mode stats
+	if (Array.isArray(modeStats)) {
+		const pushToNodeStats = modeStats.length > 1;
+
+		for (const [index, stat] of modeStats.entries()) {
 			const attr = stat["@attributes"];
 
 			const title = modeNumberToTitle(index);
