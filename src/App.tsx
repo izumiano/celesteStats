@@ -1,28 +1,30 @@
-import StatsPage from "./statsPage";
 import { ToastContainer } from "react-toastify";
 
 import "./reset.css";
 import "./App.css";
-import { useState } from "react";
+import { StrictMode, useState, type ReactNode } from "react";
 import localData from "./localData";
 import CelesteStatsSrcPage from "./celesteStatsSrcPage";
 import CelesteStatsContext from "./shared/celesteStatsContext";
+import { HeaderContext } from "./shared/header";
 
-export default function App() {
+export default function App({ children }: { children: ReactNode }) {
 	const [celesteStatsSrc, setCelesteStatsSrc] = useState(
 		localData.getCelesteStatsSrc(),
 	);
 
 	return (
-		<div>
-			{celesteStatsSrc ? (
-				<CelesteStatsContext celesteStatsSrc={celesteStatsSrc}>
-					<StatsPage />
-				</CelesteStatsContext>
-			) : (
-				<CelesteStatsSrcPage setCelesteStatsSrc={setCelesteStatsSrc} />
-			)}
+		<StrictMode>
+			<HeaderContext>
+				{celesteStatsSrc ? (
+					<CelesteStatsContext celesteStatsSrc={celesteStatsSrc}>
+						{children}
+					</CelesteStatsContext>
+				) : (
+					<CelesteStatsSrcPage setCelesteStatsSrc={setCelesteStatsSrc} />
+				)}
+			</HeaderContext>
 			<ToastContainer position="bottom-left" />
-		</div>
+		</StrictMode>
 	);
 }

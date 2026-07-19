@@ -1,13 +1,15 @@
 import "./statsPage.css";
 
-import { useId, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { useCelesteStats } from "../shared/celesteStatsContext";
 import NodeList from "./nodeList";
 import type { NodeStatType } from "./nodeTypes";
 import Header from "./header";
+import { useHeaderContext } from "../shared/header";
 
 export default function StatsPage() {
 	const { saveData } = useCelesteStats();
+	const { setChildren: setHeaderChildren } = useHeaderContext();
 
 	const [searchQuery, setSearchQuery] = useState("");
 
@@ -15,24 +17,26 @@ export default function StatsPage() {
 
 	const id = useId();
 
-	return (
-		<>
+	useEffect(() => {
+		setHeaderChildren(
 			<Header
 				saveData={saveData}
 				setSearchQuery={setSearchQuery}
 				statType={statType}
 				setStatType={setStatType}
-			/>
+			/>,
+		);
+	}, [saveData, setHeaderChildren, statType]);
 
-			<main className="main">
-				<NodeList
-					parentId={id}
-					stats={saveData?.levelSetStats?.children}
-					expanded={true}
-					statType={statType}
-					searchQuery={searchQuery}
-				/>
-			</main>
-		</>
+	return (
+		<main className="main">
+			<NodeList
+				parentId={id}
+				stats={saveData?.levelSetStats?.children}
+				expanded={true}
+				statType={statType}
+				searchQuery={searchQuery}
+			/>
+		</main>
 	);
 }

@@ -80,6 +80,10 @@ label:has(> input[type="text"]) {
 	flex-wrap: wrap;
 }
 
+.flex-grow {
+	flex: 1 1 auto;
+}
+
 .relative {
 	position: relative;
 }

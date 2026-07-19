@@ -3,7 +3,6 @@ import {
 	createContext,
 	useCallback,
 	useContext,
-	useEffect,
 	useState,
 	type ReactNode,
 } from "react";
@@ -228,11 +227,9 @@ const CelesteStatsContextProvider = createContext<{
 
 export default function CelesteStatsContext({
 	celesteStatsSrc,
-	refreshStats: shouldRefreshStats,
 	children,
 }: {
 	celesteStatsSrc: string;
-	refreshStats?: boolean;
 	children: ReactNode;
 }) {
 	const [saveData, setSaveData] = useState<SaveData>(getLocalStats());
@@ -327,12 +324,6 @@ export default function CelesteStatsContext({
 		},
 		[celesteStatsSrc],
 	);
-
-	shouldRefreshStats ??= true;
-
-	useEffect(() => {
-		shouldRefreshStats && refreshStats();
-	}, [refreshStats, shouldRefreshStats]);
 
 	return (
 		<CelesteStatsContextProvider.Provider value={{ saveData, refreshStats }}>

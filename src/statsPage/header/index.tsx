@@ -59,7 +59,7 @@ export default function Header({
 	})();
 
 	return (
-		<header className="header flex space-between align-center flex-wrap">
+		<div className="flex space-between align-center flex-wrap flex-grow">
 			<h2>
 				<div className="flex align-center">
 					<img src={timeIcon} alt="time icon" width={25} height={25} />
@@ -115,6 +115,6 @@ export default function Header({
 
 				<StatTypeSelector statType={statType} setStatType={setStatType} />
 			</div>
-		</header>
+		</div>
 	);
 }
