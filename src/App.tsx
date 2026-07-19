@@ -7,6 +7,7 @@ import localData from "./localData";
 import CelesteStatsSrcPage from "./celesteStatsSrcPage";
 import CelesteStatsContext from "./shared/celesteStatsContext";
 import { HeaderContext } from "./shared/header";
+import RefreshStatsButton from "./shared/refreshStatsButton";
 
 export default function App({ children }: { children: ReactNode }) {
 	const [celesteStatsSrc, setCelesteStatsSrc] = useState(
@@ -19,6 +20,7 @@ export default function App({ children }: { children: ReactNode }) {
 				{celesteStatsSrc ? (
 					<CelesteStatsContext celesteStatsSrc={celesteStatsSrc}>
 						{children}
+						<RefreshStatsButton />
 					</CelesteStatsContext>
 				) : (
 					<CelesteStatsSrcPage setCelesteStatsSrc={setCelesteStatsSrc} />

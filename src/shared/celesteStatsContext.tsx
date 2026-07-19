@@ -188,7 +188,7 @@ function getLocalStats() {
 	const saveDataStr = localData.getLocalStats();
 
 	if (saveDataStr == null) {
-		return {};
+		return null;
 	}
 
 	const saveData: SaveDataResponse = JSON.parse(saveDataStr);
@@ -222,7 +222,7 @@ interface RefreshStatsParams {
 
 const CelesteStatsContextProvider = createContext<{
 	saveData: SaveData;
-	refreshStats: (params: RefreshStatsParams) => void;
+	refreshStats: (params: RefreshStatsParams) => Promise<null>;
 } | null>(null);
 
 export default function CelesteStatsContext({
@@ -232,27 +232,31 @@ export default function CelesteStatsContext({
 	celesteStatsSrc: string;
 	children: ReactNode;
 }) {
-	const [saveData, setSaveData] = useState<SaveData>(getLocalStats());
+	const [saveData, setSaveData] = useState<SaveData | null>(getLocalStats());
 
 	const refreshStats = useCallback(
 		({ silent }: RefreshStatsParams = { silent: false }) => {
 			if (import.meta.env.VITE_DISABLE_STAT_REFRESH === "true") {
-				return;
+				return new Promise<null>((resolve) => resolve(null));
 			}
 
-			(async () => {
-				let toastId = null;
-				if (!silent) {
-					toastId = toast.loading("Refreshing Stats");
+			let toastId = null;
+			if (!silent) {
+				toastId = toast.loading(
+					<span>
+						Refreshing Stats <i>[Connecting...]</i>
+					</span>,
+				);
+			}
+			let isConnected = false;
+			const controller = new AbortController();
+			setTimeout(() => {
+				if (!isConnected) {
+					controller.abort();
 				}
-				let isConnected = false;
-				const controller = new AbortController();
-				setTimeout(() => {
-					if (!isConnected) {
-						controller.abort();
-					}
-				}, 10000);
+			}, 10000);
 
+			return new Promise<null>((resolve) => {
 				fetch(`${celesteStatsSrc}/celesteSaves/celesteSaves.php`, {
 					signal: controller.signal,
 				})
@@ -264,6 +268,12 @@ export default function CelesteStatsContext({
 							throw new Error(
 								`HTTP error! status: ${response.status}, message: ${errorBody}`,
 							);
+						}
+
+						if (toastId != null) {
+							toast.update(toastId, {
+								render: "Refreshing Stats",
+							});
 						}
 
 						const saveData: SaveDataResponse = await response.json();
@@ -319,14 +329,21 @@ export default function CelesteStatsContext({
 								autoClose: 10000,
 							});
 						}
-					});
-			})();
+					})
+					.finally(() => resolve(null));
+			});
 		},
 		[celesteStatsSrc],
 	);
 
+	if (!saveData) {
+		refreshStats();
+	}
+
 	return (
-		<CelesteStatsContextProvider.Provider value={{ saveData, refreshStats }}>
+		<CelesteStatsContextProvider.Provider
+			value={{ saveData: saveData ?? {}, refreshStats }}
+		>
 			{saveData ? children : null}
 		</CelesteStatsContextProvider.Provider>
 	);
