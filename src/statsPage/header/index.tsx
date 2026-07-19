@@ -59,8 +59,8 @@ export default function Header({
 	})();
 
 	return (
-		<div className="flex space-between align-center flex-wrap flex-grow">
-			<h2>
+		<div className="flex align-center flex-wrap flex-grow">
+			<h2 className="flex-grow">
 				<div className="flex align-center">
 					<img src={timeIcon} alt="time icon" width={25} height={25} />
 					{statType === "diff" ? "+" : ""}
@@ -73,48 +73,42 @@ export default function Header({
 				</div>
 			</h2>
 
-			<div className="flex align-center flex-wrap">
-				<label className="flex align-center">
-					<input
-						ref={searchInputRef}
-						type="text"
-						onChange={async (event) => {
-							setShowRemoveSearchButton(event.target.value !== "");
+			<label className="flex align-center searchBar">
+				<input
+					ref={searchInputRef}
+					type="text"
+					onChange={async (event) => {
+						setShowRemoveSearchButton(event.target.value !== "");
 
-							searchQueryAbortController.current.abort();
-							searchQueryAbortController.current = new AbortController();
-							if (
-								(
-									await sleepFor(
-										1000,
-										searchQueryAbortController.current.signal,
-									)
-								).wasAborted
-							) {
-								return;
-							}
-							setSearchQuery(event.target.value);
-						}}
-					/>
-					<button
-						className={`removeSearchButton ${showRemoveSearchButton ? "" : "no-pointer"}`}
-						onClick={(event) => {
-							event.preventDefault();
-							if (searchInputRef.current) {
-								searchInputRef.current.value = "";
-								searchInputRef.current.focus();
-							}
-							setSearchQuery("");
-							setShowRemoveSearchButton(false);
-						}}
-					>
-						<img src={removeIcon} width={15} height={15} />
-					</button>
-					<img src={magnifyingGlass} width={25} height={25} />
-				</label>
+						searchQueryAbortController.current.abort();
+						searchQueryAbortController.current = new AbortController();
+						if (
+							(await sleepFor(1000, searchQueryAbortController.current.signal))
+								.wasAborted
+						) {
+							return;
+						}
+						setSearchQuery(event.target.value);
+					}}
+				/>
+				<button
+					className={`removeSearchButton ${showRemoveSearchButton ? "" : "no-pointer"}`}
+					onClick={(event) => {
+						event.preventDefault();
+						if (searchInputRef.current) {
+							searchInputRef.current.value = "";
+							searchInputRef.current.focus();
+						}
+						setSearchQuery("");
+						setShowRemoveSearchButton(false);
+					}}
+				>
+					<img src={removeIcon} width={15} height={15} />
+				</button>
+				<img src={magnifyingGlass} width={25} height={25} />
+			</label>
 
-				<StatTypeSelector statType={statType} setStatType={setStatType} />
-			</div>
+			<StatTypeSelector statType={statType} setStatType={setStatType} />
 		</div>
 	);
 }

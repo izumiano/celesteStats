@@ -66,7 +66,7 @@ export default function Node({
 		const success = await tryChangeTitle(node, title);
 
 		if (success) {
-			refreshStats({ silent: true });
+			await refreshStats({ silent: true });
 		} else {
 			titleRef.current = node.title;
 		}

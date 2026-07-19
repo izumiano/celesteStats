@@ -55,7 +55,7 @@ export default function DeleteButton({
 								const success = await tryDeleteNode(node);
 
 								if (success) {
-									refreshStats({ silent: true });
+									await refreshStats({ silent: true });
 								}
 
 								setLoadingState("finished");
