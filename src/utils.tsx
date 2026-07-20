@@ -292,6 +292,37 @@ export function formatTime(ticks: number) {
 	return `${hoursInt}:${addLeadingZeroes(minutesInt, 2)}:${addLeadingZeroes(secondsInt, 2)}.${addLeadingZeroes(millisecondsInt, 3)}`;
 }
 
+export function parseTimeAgo(distance: number) {
+	const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+	const hours = Math.floor(
+		(distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
+	);
+	const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+	const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+	let selectedTimeValue = -1;
+	let unit = "";
+	if (days > 0) {
+		unit = "day";
+		selectedTimeValue = days;
+	} else if (hours > 0) {
+		unit = "hour";
+		selectedTimeValue = hours;
+	} else if (minutes > 0) {
+		unit = "minute";
+		selectedTimeValue = minutes;
+	} else {
+		unit = "second";
+		selectedTimeValue = seconds;
+	}
+
+	if (selectedTimeValue !== 1) {
+		unit += "s";
+	}
+
+	return { value: selectedTimeValue, unit: unit };
+}
+
 export function tryCatch<TReturn>(
 	func: () => TReturn,
 ): { failed: false; value: TReturn } | { failed: true; error: unknown } {

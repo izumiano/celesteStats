@@ -62,6 +62,14 @@ label:has(> input[type="text"]) {
 	&.alignItems {
 		align-items: center;
 	}
+
+	&.column {
+		flex-direction: column;
+	}
+
+	&.align-end {
+		align-items: flex-end;
+	}
 }
 
 .align-center {
@@ -246,4 +254,9 @@ label:has(> input[type="text"]) {
 
 .transparent75 {
 	opacity: 0.75;
+}
+
+.unimportant {
+	color: rgb(255 255 255 / 0.5);
+	font-size: small;
 }
