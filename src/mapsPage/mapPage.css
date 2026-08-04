@@ -1,0 +1,49 @@
+.map-page {
+	position: relative;
+	display: grid;
+	width: 90%;
+	margin: auto;
+	--backgroundColor: hsl(235, 12%, 20%);
+	background-color: var(--backgroundColor);
+	border: 1px solid rgba(255, 255, 255, 0.6);
+	border-radius: 1rem;
+	overflow: hidden;
+
+	--chapter-image-height: clamp(3rem, 15vw, 10rem);
+
+	> * {
+		grid-area: 1 / 1;
+	}
+
+	.image-overlay {
+		position: absolute;
+		width: 100%;
+		height: var(--chapter-image-height);
+		top: 0;
+		padding: 1rem;
+
+		background: linear-gradient(transparent, var(--backgroundColor));
+
+		> .title {
+			align-items: flex-end;
+			width: 100%;
+
+			> * {
+				width: 100%;
+
+				> .mapLinks {
+					flex: 1 1 auto;
+					display: flex;
+					justify-content: end;
+					align-items: center;
+				}
+			}
+		}
+	}
+}
+
+.chapter-image {
+	width: 100%;
+	height: var(--chapter-image-height);
+	object-fit: cover;
+}

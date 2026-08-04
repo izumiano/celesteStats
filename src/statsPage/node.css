@@ -29,82 +29,82 @@
 		border: 1px solid rgba(255, 255, 255, 0.6);
 		background-color: var(--backgroundColor);
 	}
+}
 
-	.nodeHeader {
-		display: flex;
-		align-items: center;
-		position: relative;
+.nodeHeader {
+	display: flex;
+	align-items: center;
+	position: relative;
 
-		> .nodeInfo {
-			flex: 1 1 auto;
+	> .nodeInfo {
+		flex: 1 1 auto;
+	}
+
+	> img {
+		margin: 0 0.5rem;
+
+		transition: rotate 0.2s;
+	}
+
+	> .deleteDropdown {
+		background-color: transparent;
+		position: absolute;
+
+		--padding: 0.7rem;
+
+		width: calc(var(--del-btn-size) + var(--padding));
+		height: calc(var(--del-btn-size) + var(--padding));
+
+		right: calc(
+			3px /*offset so dropdown outline does not get clipped*/ -
+			var(--del-btn-size) -
+			var(--node-padding) -
+			var(--del-btn-margin)
+		);
+
+		.deleteButton {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			height: 100%;
 		}
+	}
 
-		> img {
-			margin: 0 0.5rem;
+	.nodeTitle {
+		font-size: 25px;
+		font-weight: 500;
 
-			transition: rotate 0.2s;
-		}
+		background-color: transparent;
+		color: white;
 
-		> .deleteDropdown {
-			background-color: transparent;
-			position: absolute;
+		border: none;
 
-			--padding: 0.7rem;
+		overflow: hidden;
+		white-space: nowrap;
+		text-overflow: ellipsis;
 
-			width: calc(var(--del-btn-size) + var(--padding));
-			height: calc(var(--del-btn-size) + var(--padding));
+		max-width: 100%;
 
-			right: calc(
-				3px /*offset so dropdown outline does not get clipped*/ -
-				var(--del-btn-size) -
-				var(--node-padding) -
-				var(--del-btn-margin)
-			);
-
-			.deleteButton {
-				display: flex;
-				justify-content: center;
-				align-items: center;
-				height: 100%;
-			}
-		}
-
-		.nodeStats {
-			color: rgb(179, 179, 179);
-		}
-
-		.nodeTitle {
-			font-size: 25px;
-			font-weight: 500;
-
-			background-color: transparent;
-			color: white;
-
-			border: none;
-
-			overflow: hidden;
-			white-space: nowrap;
-			text-overflow: ellipsis;
-
-			max-width: 100%;
-
-			&:is(input) {
-				field-sizing: content;
-				@supports not (field-sizing: content) {
-					width: 100%;
-				}
-			}
-		}
-
-		.mapLinks {
-			&:has(*) {
-				padding-left: var(--padding);
-				padding-right: var(--padding);
-			}
-
+		&:is(input) {
+			field-sizing: content;
 			@supports not (field-sizing: content) {
-				order: -1;
+				width: 100%;
 			}
 		}
 	}
+
+	.mapLinks {
+		&:has(*) {
+			padding-left: var(--padding);
+			padding-right: var(--padding);
+		}
+
+		@supports not (field-sizing: content) {
+			order: -1;
+		}
+	}
+}
+
+.nodeStats {
+	color: rgb(179, 179, 179);
 }

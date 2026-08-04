@@ -8,6 +8,10 @@
 		"types": ["vite/client"],
 		"skipLibCheck": true,
 
+		"paths": {
+			"@assets/*": ["./src/assets/*"]
+		},
+
 		/* Bundler mode */
 		"moduleResolution": "bundler",
 		"allowImportingTsExtensions": true,
