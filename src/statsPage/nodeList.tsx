@@ -38,8 +38,6 @@ export default function NodeList({
 	statType: NodeStatType;
 	searchQuery: string;
 }) {
-	let foundQuery = false;
-
 	const animationState = useRef({
 		expanded,
 		isAnimating: false,
@@ -65,6 +63,7 @@ export default function NodeList({
 		>
 			{(expanded || animationState.current.isAnimating) &&
 				stats?.map((node) => {
+					let foundQuery = false;
 					if (searchQuery !== "") {
 						if (node.title.toLowerCase().includes(searchQuery.toLowerCase())) {
 							foundQuery = true;
