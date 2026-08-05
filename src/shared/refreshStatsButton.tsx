@@ -8,7 +8,10 @@ import type { SaveData } from "../statsPage/nodeTypes";
 function getTimeAgo(saveData: SaveData) {
 	const now = Date.now();
 
-	const timeSince = saveData.timestamp ? now - saveData.timestamp : 0;
+	let timeSince = saveData.timestamp ? now - saveData.timestamp : 0;
+	if (timeSince < 0) {
+		timeSince = 0;
+	}
 	return parseTimeAgo(timeSince);
 }
 
