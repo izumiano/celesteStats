@@ -11,7 +11,9 @@ export default function StatsPage() {
 	const { saveData } = useCelesteStats();
 	const { setChildren: setHeaderChildren } = useHeaderContext();
 
-	const [searchQuery, setSearchQuery] = useState("");
+	const [searchQuery, setSearchQuery] = useState(
+		sessionStorage.getItem("searchQuery") ?? "",
+	);
 
 	const [statType, setStatType] = useState<NodeStatType>("current");
 
@@ -21,12 +23,13 @@ export default function StatsPage() {
 		setHeaderChildren(
 			<Header
 				saveData={saveData}
+				initialSearch={searchQuery}
 				setSearchQuery={setSearchQuery}
 				statType={statType}
 				setStatType={setStatType}
 			/>,
 		);
-	}, [saveData, setHeaderChildren, statType]);
+	}, [saveData, setHeaderChildren, statType, searchQuery]);
 
 	return (
 		<main className="main">

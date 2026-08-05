@@ -11,18 +11,22 @@ import StatTypeSelector from "./statTypeSelector";
 
 export default function Header({
 	saveData,
+	initialSearch,
 	setSearchQuery,
 	statType,
 	setStatType,
 }: {
 	saveData: SaveData | null;
+	initialSearch: string;
 	setSearchQuery: (query: string) => void;
 	statType: NodeStatType;
 	setStatType: (statType: NodeStatType) => void;
 }) {
 	const searchQueryAbortController = useRef(new AbortController());
 	const searchInputRef = useRef<HTMLInputElement>(null);
-	const [showRemoveSearchButton, setShowRemoveSearchButton] = useState(false);
+	const [showRemoveSearchButton, setShowRemoveSearchButton] = useState(
+		initialSearch !== "",
+	);
 
 	const time = (() => {
 		if (!saveData?.levelSetStats) {
@@ -76,6 +80,7 @@ export default function Header({
 			<label className="flex align-center searchBar">
 				<input
 					ref={searchInputRef}
+					defaultValue={initialSearch}
 					type="text"
 					onChange={async (event) => {
 						setShowRemoveSearchButton(event.target.value !== "");
@@ -88,7 +93,9 @@ export default function Header({
 						) {
 							return;
 						}
-						setSearchQuery(event.target.value);
+						const search = event.target.value;
+						sessionStorage.setItem("searchQuery", search);
+						setSearchQuery(search);
 					}}
 				/>
 				<button
