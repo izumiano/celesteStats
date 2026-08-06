@@ -1,4 +1,4 @@
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
 export async function sleepFor(
 	milliseconds: number,
@@ -349,4 +349,35 @@ export function addEruda() {
 			});
 		}
 	}
+}
+
+export function joinElems(
+	elems: ReactNode[],
+	separator: ReactNode = ", ",
+	finalSeparator?: ReactNode,
+) {
+	finalSeparator ??= separator;
+	return elems.reduce((prev, curr, index) => {
+		if (index === 0) {
+			return curr;
+		}
+
+		if (index === elems.length - 1) {
+			return (
+				<>
+					{prev}
+					{finalSeparator}
+					{curr}.
+				</>
+			);
+		}
+
+		return (
+			<>
+				{prev}
+				{separator}
+				{curr}
+			</>
+		);
+	});
 }

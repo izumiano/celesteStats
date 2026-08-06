@@ -13,7 +13,7 @@ import {
 	type NodeStats,
 	type SaveData,
 } from "../statsPage/nodeTypes";
-import { tryCatch } from "../utils";
+import { joinElems, tryCatch } from "../utils";
 
 interface MapAttributesResponse {
 	Completed: "true" | "false";
@@ -32,9 +32,13 @@ interface MapAttributesResponse {
 	SingleRunCompleted: "true" | "false";
 }
 
+type ModesType =
+	| { "@attributes": MapAttributesResponse }[]
+	| { [key: number]: { "@attributes": MapAttributesResponse } };
+
 interface ChapterStatsResponse {
 	sid: string;
-	modes: { "@attributes": MapAttributesResponse }[];
+	modes: ModesType;
 }
 
 type LevelSetStatsResponse = {
@@ -66,6 +70,37 @@ function recurseNodes(
 	return tryCatch(() => _recurseNodesImpl(stats));
 }
 
+function isModeArray(
+	stats: ChapterStatsResponse | LevelSetStatsResponse,
+): stats is {
+	sid: string;
+	modes: ModesType;
+} {
+	if (typeof stats.sid !== "string") {
+		return false;
+	}
+
+	if (Array.isArray(stats.modes)) {
+		return true;
+	}
+
+	const modeKeys = Object.keys(stats.modes);
+
+	const attrKeys = Object.keys(
+		stats.modes[modeKeys[0] as keyof typeof stats.modes],
+	);
+
+	const hasAttr = attrKeys.some((key) => key === "@attributes");
+	const allInt = !modeKeys.some((key) => {
+		const num = parseInt(key);
+		return (
+			!Number.isNaN(num) && Number.isInteger(num) && num !== parseFloat(key)
+		);
+	});
+
+	return hasAttr && allInt;
+}
+
 function _recurseNodesImpl(
 	stats: ChapterStatsResponse | LevelSetStatsResponse,
 	parent: NodeStats | null = null,
@@ -95,21 +130,27 @@ function _recurseNodesImpl(
 		singleRunCompleted: true,
 	};
 
-	const modesStats = stats.modes;
-	const sid = stats.sid;
-
-	// is mode stats
-	if (Array.isArray(modesStats) && typeof sid === "string") {
+	if (isModeArray(stats)) {
 		if (parent) {
-			nodeStats.sid = sid;
+			nodeStats.sid = stats.sid;
 		}
+		const modesStats = stats.modes;
 
-		const pushToNodeStats = modesStats.length > 1;
+		const entries = Object.entries(modesStats) as unknown as [
+			number | string,
+			{
+				"@attributes": MapAttributesResponse;
+			},
+		][];
 
-		for (const [index, stat] of modesStats.entries()) {
+		const pushToNodeStats = entries.length > 1;
+
+		for (const [index, stat] of entries) {
 			const attr = stat["@attributes"];
 
-			const title = modeNumberToTitle(index);
+			const title = modeNumberToTitle(
+				Number.isInteger(index) ? (index as number) : parseInt(index as string),
+			);
 
 			const node = statAttributesToNode(
 				attr,
@@ -165,12 +206,7 @@ function handleNodeStats(
 	}
 }
 
-function validateCompleted(
-	attr: MapAttributesResponse,
-	title: string,
-	parent: NodeStats | null,
-	isSingularSide: boolean,
-) {
+function validateCompleted(attr: MapAttributesResponse, title: string) {
 	const missing: string[] = [];
 	if (attr.ClearTime == null) {
 		missing.push("ClearTime");
@@ -186,36 +222,68 @@ function validateCompleted(
 		return;
 	}
 
+	toast.warn(
+		<span>
+			<b>{title}</b> missing
+			<br />
+			{joinElems(
+				missing.map((a, index) => <i key={index}>{a}</i>),
+				", ",
+				" and ",
+			)}
+		</span>,
+	);
+}
+
+function validateAttrs(
+	attr: MapAttributesResponse,
+	title: string,
+	parent: NodeStats | null,
+	isSingularSide: boolean,
+) {
 	const parentPath = parent ? getNodePath(parent) : null;
 	let path = parentPath;
 	if (!isSingularSide) {
 		path += parentPath ? `/${title}` : title;
 	}
+	path ??= "Unknown";
+
+	if (attr.Completed === "true") {
+		validateCompleted(attr, path);
+	}
+
+	const invalids: [string, unknown][] = [];
+	if (parseInt(attr.TimePlayed) < 0) {
+		invalids.push(["TimePlayed", attr.TimePlayed]);
+	}
+	if ((attr.ClearTime ?? 0) < 0) {
+		invalids.push(["ClearTime", attr.ClearTime]);
+	}
+	if (parseInt(attr.Deaths) < 0) {
+		invalids.push(["Deaths", attr.Deaths]);
+	}
+	if ((attr.ClearDeaths ?? 0) < 0) {
+		invalids.push(["ClearDeaths", attr.ClearDeaths]);
+	}
+	if ((attr.StrawberryCount ?? 0) < 0) {
+		invalids.push(["StrawberryCount", attr.StrawberryCount]);
+	}
+	if (parseInt(attr.TotalStrawberries) < 0) {
+		invalids.push(["TotalStrawberries", attr.TotalStrawberries]);
+	}
+
+	if (invalids.length === 0) {
+		return;
+	}
 
 	toast.warn(
 		<span>
-			<b>{path}</b> missing{" "}
-			{missing
-				.map((a, index) => <i key={index}>{a}</i>)
-				.reduce((prev, curr, index) => {
-					if (index === 0) {
-						return curr;
-					}
-
-					if (index === missing.length - 1) {
-						return (
-							<>
-								{prev} and {curr}.
-							</>
-						);
-					}
-
-					return (
-						<>
-							{prev}, {curr}
-						</>
-					);
-				})}
+			<b>{parentPath}</b> has invalid parameters
+			<br />
+			{joinElems(
+				invalids.map((a, index) => <i key={index}>{`${a[0]} = ${a[1]}`}</i>),
+				<br />,
+			)}
 		</span>,
 	);
 }
@@ -226,14 +294,11 @@ function statAttributesToNode(
 	parent: NodeStats | null,
 	isSingularSide: boolean,
 ): NodeStats {
-	const completed = attr.Completed === "true";
-	if (completed) {
-		validateCompleted(attr, title, parent, isSingularSide);
-	}
+	validateAttrs(attr, title, parent, isSingularSide);
 
 	return {
 		title,
-		completed,
+		completed: attr.Completed === "true",
 		timePlayed: parseInt(attr.TimePlayed),
 		clearTime: attr.ClearTime ?? 0,
 		deaths: parseInt(attr.Deaths),
