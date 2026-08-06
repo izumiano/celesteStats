@@ -6,8 +6,10 @@ import NodeList from "./nodeList";
 import type { NodeStatType } from "./nodeTypes";
 import Header from "./header";
 import { useHeaderContext } from "../shared/header";
+import { trace } from "@izumiano/vite-logger";
 
 export default function StatsPage() {
+	trace("StatsPage");
 	const { saveData } = useCelesteStats();
 	const { setChildren: setHeaderChildren } = useHeaderContext();
 

@@ -12,7 +12,7 @@ import StatTypeSelector from "./statTypeSelector";
 export default function Header({
 	saveData,
 	initialSearch,
-	setSearchQuery,
+	setSearchQuery: setSearchQueryState,
 	statType,
 	setStatType,
 }: {
@@ -27,6 +27,11 @@ export default function Header({
 	const [showRemoveSearchButton, setShowRemoveSearchButton] = useState(
 		initialSearch !== "",
 	);
+
+	const setSearchQuery = (query: string) => {
+		sessionStorage.setItem("searchQuery", query);
+		setSearchQueryState(query);
+	};
 
 	const time = (() => {
 		if (!saveData?.levelSetStats) {
@@ -93,9 +98,7 @@ export default function Header({
 						) {
 							return;
 						}
-						const search = event.target.value;
-						sessionStorage.setItem("searchQuery", search);
-						setSearchQuery(search);
+						setSearchQuery(event.target.value);
 					}}
 				/>
 				<button

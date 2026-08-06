@@ -1,4 +1,4 @@
-import { logError } from "@izumiano/vite-logger";
+import { logError, trace } from "@izumiano/vite-logger";
 import {
 	createContext,
 	useCallback,
@@ -8,16 +8,20 @@ import {
 } from "react";
 import { toast } from "react-toastify";
 import localData from "../localData";
-import type { NodeStats, SaveData } from "../statsPage/nodeTypes";
+import {
+	getNodePath,
+	type NodeStats,
+	type SaveData,
+} from "../statsPage/nodeTypes";
 import { tryCatch } from "../utils";
 
 interface MapAttributesResponse {
 	Completed: "true" | "false";
 	TimePlayed: string;
-	ClearTime: string;
+	ClearTime: number | null;
 	Deaths: string;
-	ClearDeaths: string;
-	StrawberryCount: string;
+	ClearDeaths: number | null;
+	StrawberryCount: number | null;
 	TotalStrawberries: string;
 	BestDashes: string;
 	BestDeaths: string;
@@ -65,6 +69,7 @@ function recurseNodes(
 function _recurseNodesImpl(
 	stats: ChapterStatsResponse | LevelSetStatsResponse,
 	parent: NodeStats | null = null,
+	title: string | null = null,
 ) {
 	const nodeStats: NodeStats = {
 		children: [],
@@ -73,7 +78,7 @@ function _recurseNodesImpl(
 		isMode: false,
 		isChapter: false,
 
-		title: "Unknown",
+		title: title ?? "Unknown",
 		completed: true,
 		timePlayed: 0,
 		clearTime: 0,
@@ -106,13 +111,17 @@ function _recurseNodesImpl(
 
 			const title = modeNumberToTitle(index);
 
-			const node = statAttributesToNode(attr, title, parent);
+			const node = statAttributesToNode(
+				attr,
+				title,
+				nodeStats,
+				!pushToNodeStats,
+			);
 			handleNodeStats(nodeStats, node, pushToNodeStats);
 		}
 	} else {
 		for (const [title, stat] of Object.entries(stats)) {
-			const node = _recurseNodesImpl(stat, nodeStats);
-			node.title = title;
+			const node = _recurseNodesImpl(stat, nodeStats, title);
 			node.isChapter = node.children[0]?.isMode ?? true;
 
 			handleNodeStats(nodeStats, node);
@@ -156,19 +165,80 @@ function handleNodeStats(
 	}
 }
 
+function validateCompleted(
+	attr: MapAttributesResponse,
+	title: string,
+	parent: NodeStats | null,
+	isSingularSide: boolean,
+) {
+	const missing: string[] = [];
+	if (attr.ClearTime == null) {
+		missing.push("ClearTime");
+	}
+	if (attr.ClearDeaths == null) {
+		missing.push("ClearDeaths");
+	}
+	if (attr.StrawberryCount == null) {
+		missing.push("StrawberryCount");
+	}
+
+	if (missing.length === 0) {
+		return;
+	}
+
+	const parentPath = parent ? getNodePath(parent) : null;
+	let path = parentPath;
+	if (!isSingularSide) {
+		path += parentPath ? `/${title}` : title;
+	}
+
+	toast.warn(
+		<span>
+			<b>{path}</b> missing{" "}
+			{missing
+				.map((a, index) => <i key={index}>{a}</i>)
+				.reduce((prev, curr, index) => {
+					if (index === 0) {
+						return curr;
+					}
+
+					if (index === missing.length - 1) {
+						return (
+							<>
+								{prev} and {curr}.
+							</>
+						);
+					}
+
+					return (
+						<>
+							{prev}, {curr}
+						</>
+					);
+				})}
+		</span>,
+	);
+}
+
 function statAttributesToNode(
 	attr: MapAttributesResponse,
 	title: string,
 	parent: NodeStats | null,
+	isSingularSide: boolean,
 ): NodeStats {
+	const completed = attr.Completed === "true";
+	if (completed) {
+		validateCompleted(attr, title, parent, isSingularSide);
+	}
+
 	return {
 		title,
-		completed: attr.Completed === "true",
+		completed,
 		timePlayed: parseInt(attr.TimePlayed),
-		clearTime: parseInt(attr.ClearTime),
+		clearTime: attr.ClearTime ?? 0,
 		deaths: parseInt(attr.Deaths),
-		clearDeaths: parseInt(attr.ClearDeaths),
-		strawberryCount: parseInt(attr.StrawberryCount),
+		clearDeaths: attr.ClearDeaths ?? 0,
+		strawberryCount: attr.StrawberryCount ?? 0,
 		totalStrawberries: parseInt(attr.TotalStrawberries),
 		bestDashes: parseInt(attr.BestDashes),
 		bestDeaths: parseInt(attr.BestDeaths),
@@ -185,6 +255,7 @@ function statAttributesToNode(
 }
 
 function getLocalStats() {
+	trace("getLocalStats");
 	const saveDataStr = localData.getLocalStats();
 
 	if (saveDataStr == null) {
@@ -232,7 +303,10 @@ export default function CelesteStatsContext({
 	celesteStatsSrc: string;
 	children: ReactNode;
 }) {
-	const [saveData, setSaveData] = useState<SaveData | null>(getLocalStats());
+	trace("CelesteStatsContext");
+	const [saveData, setSaveData] = useState<SaveData | null>(() =>
+		getLocalStats(),
+	);
 
 	const refreshStats = useCallback(
 		({ silent }: RefreshStatsParams = { silent: false }) => {

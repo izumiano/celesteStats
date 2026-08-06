@@ -62,6 +62,15 @@ function recurseParentPath(node: NodeStats, pathArr: string[] = []): string[] {
 	return pathArr;
 }
 
+export function getNodePath(node: NodeStats) {
+	let path = "";
+	const parentPath = getParentPath(node);
+	if (parentPath !== "") {
+		path += `${parentPath}/`;
+	}
+	return `${path}${node.title}`;
+}
+
 export function getParentPath(node: NodeStats) {
 	const pathArr = recurseParentPath(node);
 

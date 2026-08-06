@@ -23,7 +23,7 @@
 		"test": "vitest"
 	},
 	"dependencies": {
-		"@izumiano/vite-logger": "^0.0.1",
+		"@izumiano/vite-logger": "^0.0.2",
 		"react": "^19.2.0",
 		"react-dom": "^19.2.0"
 	},
