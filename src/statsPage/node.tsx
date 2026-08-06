@@ -38,25 +38,29 @@ export default function Node({
 
 	const hasChildren = node.children.length > 0;
 
+	const nodeStats = statType.includeUncompleted
+		? node.statsWithUncompleted
+		: node.statsWithoutUncompleted;
+
 	const time = (() => {
-		switch (statType) {
+		switch (statType.type) {
 			case "clear":
-				return node.clearTime;
+				return nodeStats.clearTime;
 			case "current":
-				return node.timePlayed;
+				return nodeStats.timePlayed;
 			case "diff":
-				return node.timePlayed - node.clearTime;
+				return nodeStats.timePlayed - nodeStats.clearTime;
 		}
 	})();
 
 	const deaths = (() => {
-		switch (statType) {
+		switch (statType.type) {
 			case "clear":
-				return node.clearDeaths;
+				return nodeStats.clearDeaths;
 			case "current":
-				return node.deaths;
+				return nodeStats.deaths;
 			case "diff":
-				return node.deaths - node.clearDeaths;
+				return nodeStats.deaths - nodeStats.clearDeaths;
 		}
 	})();
 
@@ -145,13 +149,13 @@ export default function Node({
 					<div className="nodeStats">
 						<div className="flex align-center">
 							<img src={timeIcon} alt="time icon" width={20} height={20} />
-							{statType === "diff" ? "+" : ""}
+							{statType.type === "diff" ? "+" : ""}
 							<span>{time != null ? formatTime(time) : "?"}</span>
 						</div>
 						<div className="flex align-center">
 							<img src={deathsIcon} alt="deaths icon" width={20} height={20} />
 							<span>
-								{statType === "diff" ? "+" : ""}
+								{statType.type === "diff" ? "+" : ""}
 								{deaths ?? "?"}
 							</span>
 						</div>

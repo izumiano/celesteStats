@@ -20,7 +20,9 @@ export default function Header({
 	initialSearch: string;
 	setSearchQuery: (query: string) => void;
 	statType: NodeStatType;
-	setStatType: (statType: NodeStatType) => void;
+	setStatType: (
+		arg: NodeStatType | ((prev: NodeStatType) => NodeStatType),
+	) => void;
 }) {
 	const searchQueryAbortController = useRef(new AbortController());
 	const searchInputRef = useRef<HTMLInputElement>(null);
@@ -33,37 +35,37 @@ export default function Header({
 		setSearchQueryState(query);
 	};
 
+	const nodeStats = statType.includeUncompleted
+		? saveData?.levelSetStats?.statsWithUncompleted
+		: saveData?.levelSetStats?.statsWithoutUncompleted;
+
 	const time = (() => {
-		if (!saveData?.levelSetStats) {
+		if (!nodeStats) {
 			return null;
 		}
 
-		switch (statType) {
+		switch (statType.type) {
 			case "clear":
-				return saveData.levelSetStats?.clearTime;
+				return nodeStats.clearTime;
 			case "current":
-				return saveData.levelSetStats.timePlayed;
+				return nodeStats.timePlayed;
 			case "diff":
-				return (
-					saveData.levelSetStats.timePlayed - saveData.levelSetStats.clearTime
-				);
+				return nodeStats.timePlayed - nodeStats.clearTime;
 		}
 	})();
 
 	const deaths = (() => {
-		if (!saveData?.levelSetStats) {
+		if (!nodeStats) {
 			return null;
 		}
 
-		switch (statType) {
+		switch (statType.type) {
 			case "clear":
-				return saveData.levelSetStats.clearDeaths;
+				return nodeStats.clearDeaths;
 			case "current":
-				return saveData.levelSetStats.deaths;
+				return nodeStats.deaths;
 			case "diff":
-				return (
-					saveData.levelSetStats.deaths - saveData.levelSetStats.clearDeaths
-				);
+				return nodeStats.deaths - nodeStats.clearDeaths;
 		}
 	})();
 
@@ -72,15 +74,28 @@ export default function Header({
 			<h2 className="flex-grow">
 				<div className="flex align-center">
 					<img src={timeIcon} alt="time icon" width={25} height={25} />
-					{statType === "diff" ? "+" : ""}
+					{statType.type === "diff" ? "+" : ""}
 					{time != null ? formatTime(time) : "?"}
 				</div>
 				<div className="flex align-center">
 					<img src={deathsIcon} alt="deaths icon" width={25} height={25} />
-					{statType === "diff" ? "+" : ""}
+					{statType.type === "diff" ? "+" : ""}
 					{deaths ?? "?"}
 				</div>
 			</h2>
+
+			<label className="padding">
+				Show Uncompleted
+				<input
+					type="checkbox"
+					checked={statType.includeUncompleted}
+					onChange={() => {
+						setStatType((prev) => {
+							return { ...prev, includeUncompleted: !prev.includeUncompleted };
+						});
+					}}
+				/>
+			</label>
 
 			<label className="flex align-center searchBar">
 				<input

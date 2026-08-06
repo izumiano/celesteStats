@@ -4,14 +4,22 @@ import React from "react";
 import { toast } from "react-toastify";
 import localData from "../localData";
 
-export interface NodeStats {
-	title: string;
-
-	completed: boolean;
+export interface PreCalcNodeStats {
 	timePlayed: number;
 	clearTime: number;
 	deaths: number;
 	clearDeaths: number;
+}
+
+export interface NodeStats {
+	title: string;
+
+	completed: boolean;
+	hasAnyCompleted: boolean;
+
+	statsWithUncompleted: PreCalcNodeStats;
+	statsWithoutUncompleted: PreCalcNodeStats;
+
 	strawberryCount: number;
 	totalStrawberries: number;
 	bestDashes: number;
@@ -36,7 +44,10 @@ export interface SaveData {
 }
 
 export const NodeStatTypeArray = ["current", "clear", "diff"] as const;
-export type NodeStatType = (typeof NodeStatTypeArray)[number];
+export type NodeStatType = {
+	type: (typeof NodeStatTypeArray)[number];
+	includeUncompleted: boolean;
+};
 
 export function nodeIncludes(node: NodeStats, query: string): boolean {
 	query = query.toLowerCase();

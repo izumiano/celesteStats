@@ -11,6 +11,7 @@ import localData from "../localData";
 import {
 	getNodePath,
 	type NodeStats,
+	type PreCalcNodeStats,
 	type SaveData,
 } from "../statsPage/nodeTypes";
 import { joinElems, tryCatch } from "../utils";
@@ -115,10 +116,19 @@ function _recurseNodesImpl(
 
 		title: title ?? "Unknown",
 		completed: true,
-		timePlayed: 0,
-		clearTime: 0,
-		deaths: 0,
-		clearDeaths: 0,
+		hasAnyCompleted: false,
+		statsWithUncompleted: {
+			timePlayed: 0,
+			clearTime: 0,
+			deaths: 0,
+			clearDeaths: 0,
+		},
+		statsWithoutUncompleted: {
+			timePlayed: 0,
+			clearTime: 0,
+			deaths: 0,
+			clearDeaths: 0,
+		},
 		strawberryCount: 0,
 		totalStrawberries: 0,
 		bestDashes: 0,
@@ -143,7 +153,9 @@ function _recurseNodesImpl(
 			},
 		][];
 
-		const pushToNodeStats = entries.length > 1;
+		const pushToNodeStats =
+			// biome-ignore lint/suspicious/noDoubleEquals: <intentionally coercing string(0) to number(0) to show sides with modeNumber >0 >
+			entries.length > 1 || !entries.some((e) => e[0] == 0);
 
 		for (const [index, stat] of entries) {
 			const attr = stat["@attributes"];
@@ -180,11 +192,27 @@ function handleNodeStats(
 	if (pushToNodeStats) {
 		nodeStats.children.push(node);
 	}
+	if (!node.completed) {
+		nodeStats.completed = false;
+	} else {
+		nodeStats.hasAnyCompleted = true;
+	}
 
-	nodeStats.timePlayed += node.timePlayed;
-	nodeStats.clearTime += node.clearTime;
-	nodeStats.clearDeaths += node.clearDeaths;
-	nodeStats.deaths += node.deaths;
+	const parentWithUncompleted = nodeStats.statsWithUncompleted;
+	const parentWithoutUncompleted = nodeStats.statsWithoutUncompleted;
+	const withUncompleted = node.statsWithUncompleted;
+	const withoutUncompleted = node.statsWithoutUncompleted;
+
+	parentWithUncompleted.timePlayed += withUncompleted.timePlayed;
+	parentWithUncompleted.clearTime += withUncompleted.clearTime;
+	parentWithUncompleted.clearDeaths += withUncompleted.clearDeaths;
+	parentWithUncompleted.deaths += withUncompleted.deaths;
+
+	parentWithoutUncompleted.timePlayed += withoutUncompleted.timePlayed;
+	parentWithoutUncompleted.clearTime += withoutUncompleted.clearTime;
+	parentWithoutUncompleted.clearDeaths += withoutUncompleted.clearDeaths;
+	parentWithoutUncompleted.deaths += withoutUncompleted.deaths;
+
 	nodeStats.strawberryCount += node.strawberryCount;
 	nodeStats.totalStrawberries += node.totalStrawberries;
 	nodeStats.bestDashes += node.bestDashes;
@@ -192,9 +220,6 @@ function handleNodeStats(
 	nodeStats.bestFullClearTime += node.bestFullClearTime;
 	nodeStats.bestTime += node.bestTime;
 
-	if (!node.completed) {
-		nodeStats.completed = false;
-	}
 	if (!node.fullClear) {
 		nodeStats.fullClear = false;
 	}
@@ -296,13 +321,34 @@ function statAttributesToNode(
 ): NodeStats {
 	validateAttrs(attr, title, parent, isSingularSide);
 
-	return {
-		title,
-		completed: attr.Completed === "true",
+	const completed = attr.Completed === "true";
+
+	const statsWithUncompleted: PreCalcNodeStats = {
 		timePlayed: parseInt(attr.TimePlayed),
 		clearTime: attr.ClearTime ?? 0,
 		deaths: parseInt(attr.Deaths),
 		clearDeaths: attr.ClearDeaths ?? 0,
+	};
+	const statsWithoutUncompleted: PreCalcNodeStats = completed
+		? {
+				timePlayed: statsWithUncompleted.timePlayed,
+				clearTime: statsWithUncompleted.clearTime,
+				deaths: statsWithUncompleted.deaths,
+				clearDeaths: statsWithUncompleted.clearDeaths,
+			}
+		: {
+				timePlayed: 0,
+				clearTime: 0,
+				deaths: 0,
+				clearDeaths: 0,
+			};
+
+	return {
+		title,
+		completed,
+		hasAnyCompleted: completed,
+		statsWithUncompleted,
+		statsWithoutUncompleted,
 		strawberryCount: attr.StrawberryCount ?? 0,
 		totalStrawberries: parseInt(attr.TotalStrawberries),
 		bestDashes: parseInt(attr.BestDashes),
@@ -372,6 +418,8 @@ export default function CelesteStatsContext({
 	const [saveData, setSaveData] = useState<SaveData | null>(() =>
 		getLocalStats(),
 	);
+
+	console.log(saveData);
 
 	const refreshStats = useCallback(
 		({ silent }: RefreshStatsParams = { silent: false }) => {

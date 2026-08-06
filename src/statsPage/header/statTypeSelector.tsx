@@ -13,9 +13,13 @@ export default function StatTypeSelector({
 	setStatType,
 }: {
 	statType: NodeStatType;
-	setStatType: (statType: NodeStatType) => void;
+	setStatType: (
+		arg: NodeStatType | ((prev: NodeStatType) => NodeStatType),
+	) => void;
 }) {
-	const selectedStatTypeIndex = NodeStatTypeArray.indexOf(statType);
+	const statType2 = statType.type;
+
+	const selectedStatTypeIndex = NodeStatTypeArray.indexOf(statType2);
 
 	const id = useId();
 
@@ -26,16 +30,21 @@ export default function StatTypeSelector({
 				{ "--selected-index": selectedStatTypeIndex } as StatTypeSelectorCSS
 			}
 		>
-			{NodeStatTypeArray.map((statType, index) => {
+			{NodeStatTypeArray.map((statType2, index) => {
 				return (
 					<button
-						key={`${id}${statType}`}
+						key={`${id}${statType2}`}
 						className={index === selectedStatTypeIndex ? "selected" : ""}
 						onClick={() => {
-							setStatType(statType);
+							setStatType((prev) => {
+								return {
+									type: statType2,
+									includeUncompleted: prev.includeUncompleted,
+								};
+							});
 						}}
 					>
-						{capitalizeFirstLetter(statType)}
+						{capitalizeFirstLetter(statType2)}
 					</button>
 				);
 			})}

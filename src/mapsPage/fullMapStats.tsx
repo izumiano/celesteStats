@@ -9,14 +9,18 @@ import type { NodeStats } from "../statsPage/nodeTypes";
 export default function FullMapStats({ node }: { node: NodeStats }) {
 	const stats = {
 		time: {
-			clear: node.clearTime,
-			current: node.timePlayed,
-			diff: node.timePlayed - node.clearTime,
+			clear: node.statsWithUncompleted.clearTime,
+			current: node.statsWithUncompleted.timePlayed,
+			diff:
+				node.statsWithUncompleted.timePlayed -
+				node.statsWithUncompleted.clearTime,
 		},
 		deaths: {
-			clear: node.clearDeaths,
-			current: node.deaths,
-			diff: node.deaths - node.clearDeaths,
+			clear: node.statsWithUncompleted.clearDeaths,
+			current: node.statsWithUncompleted.deaths,
+			diff:
+				node.statsWithUncompleted.deaths -
+				node.statsWithUncompleted.clearDeaths,
 		},
 	};
 

@@ -17,7 +17,10 @@ export default function StatsPage() {
 		sessionStorage.getItem("searchQuery") ?? "",
 	);
 
-	const [statType, setStatType] = useState<NodeStatType>("current");
+	const [statType, setStatType] = useState<NodeStatType>({
+		type: "current",
+		includeUncompleted: true,
+	});
 
 	const id = useId();
 

@@ -63,6 +63,10 @@ export default function NodeList({
 		>
 			{(expanded || animationState.current.isAnimating) &&
 				stats?.map((node) => {
+					if (!statType.includeUncompleted && !node.hasAnyCompleted) {
+						return null;
+					}
+
 					let foundQuery = false;
 					if (searchQuery !== "") {
 						if (node.title.toLowerCase().includes(searchQuery.toLowerCase())) {
