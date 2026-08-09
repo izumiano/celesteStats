@@ -4,6 +4,7 @@
 	--col-primary: rgb(219, 83, 158);
 	--col-secondary: rgb(168, 165, 226);
 	--col-background: hsl(225, 14%, 11%);
+	--col-neutral: hsl(from var(--col-background) h s 40% / 0.9);
 	--col-fail: rgb(236, 73, 61);
 	--col-warn: rgb(224, 236, 61);
 
@@ -27,8 +28,17 @@
 	src: url("/Renogare-Regular.otf");
 }
 
+.button {
+	outline: 2px solid transparent;
+	transition: outline 0.3s;
+
+	&:focus {
+		outline: 2px solid rgb(121, 121, 233);
+	}
+}
+
 label:has(> input[type="text"]) {
-	background-color: hsl(from var(--col-background) h s 40% / 0.9);
+	background-color: var(--col-neutral);
 	border-radius: 0.5rem;
 	padding: 0 0.5rem 0 0;
 	cursor: text;

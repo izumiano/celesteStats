@@ -1,71 +1,77 @@
-import timeIcon from "../../assets/time.png";
-import deathsIcon from "../../assets/deaths.png";
-import magnifyingGlass from "../../assets/magnifyingGlass.png";
-import removeIcon from "../../assets/remove.png";
+import timeIcon from "@assets/time.png";
+import deathsIcon from "@assets/deaths.png";
+import magnifyingGlass from "@assets/magnifyingGlass.png";
+import removeIcon from "@assets/remove.png";
+import filterIcon from "@assets/filter.png";
 import "./header.css";
 
-import { useRef, useState } from "react";
-import { formatTime, sleepFor } from "../../utils";
-import type { NodeStatType, SaveData } from "../nodeTypes";
+import { useId, useRef, useState } from "react";
+import { capitalizeFirstLetter, formatTime, sleepFor } from "../../utils";
+import type { SaveData } from "../nodeTypes";
 import StatTypeSelector from "./statTypeSelector";
+import {
+	StatsFilterSortByArray,
+	type StatsFilter,
+	type StatsFilterSortByType,
+} from "../../shared/celesteStatsContext";
+import Dropdown from "../../shared/dropdown";
 
 export default function Header({
 	saveData,
 	initialSearch,
 	setSearchQuery: setSearchQueryState,
-	statType,
-	setStatType,
+	filter,
+	setFilter,
 }: {
 	saveData: SaveData | null;
 	initialSearch: string;
 	setSearchQuery: (query: string) => void;
-	statType: NodeStatType;
-	setStatType: (
-		arg: NodeStatType | ((prev: NodeStatType) => NodeStatType),
-	) => void;
+	filter: StatsFilter;
+	setFilter: (arg: StatsFilter | ((prev: StatsFilter) => StatsFilter)) => void;
 }) {
 	const searchQueryAbortController = useRef(new AbortController());
 	const searchInputRef = useRef<HTMLInputElement>(null);
 	const [showRemoveSearchButton, setShowRemoveSearchButton] = useState(
 		initialSearch !== "",
 	);
+	const id = useId();
 
 	const setSearchQuery = (query: string) => {
 		sessionStorage.setItem("searchQuery", query);
 		setSearchQueryState(query);
 	};
 
-	const nodeStats = statType.includeUncompleted
-		? saveData?.levelSetStats?.statsWithUncompleted
-		: saveData?.levelSetStats?.statsWithoutUncompleted;
-
 	const time = (() => {
-		if (!nodeStats) {
+		if (!saveData?.levelSetStats) {
 			return null;
 		}
 
-		switch (statType.type) {
+		switch (filter.type) {
 			case "clear":
-				return nodeStats.clearTime;
+				return saveData.levelSetStats.clearTime;
 			case "current":
-				return nodeStats.timePlayed;
+				return saveData.levelSetStats.timePlayed;
 			case "diff":
-				return nodeStats.timePlayed - nodeStats.clearTime;
+				return (
+					saveData.levelSetStats.timePlayed - saveData.levelSetStats.clearTime
+				);
 		}
 	})();
 
 	const deaths = (() => {
-		if (!nodeStats) {
+		if (!saveData?.levelSetStats) {
 			return null;
 		}
 
-		switch (statType.type) {
+		switch (filter.type) {
 			case "clear":
-				return nodeStats.clearDeaths;
+				return saveData.levelSetStats.clearDeaths;
 			case "current":
-				return nodeStats.deaths;
+				return saveData.levelSetStats.deaths;
 			case "diff":
-				return nodeStats.deaths - nodeStats.clearDeaths;
+				return (
+					saveData.levelSetStats.deaths - saveData.levelSetStats.clearDeaths
+				);
 		}
 	})();
 
@@ -74,28 +80,15 @@ export default function Header({
 			<h2 className="flex-grow">
 				<div className="flex align-center">
 					<img src={timeIcon} alt="time icon" width={25} height={25} />
-					{statType.type === "diff" ? "+" : ""}
+					{filter.type === "diff" ? "+" : ""}
 					{time != null ? formatTime(time) : "?"}
 				</div>
 				<div className="flex align-center">
 					<img src={deathsIcon} alt="deaths icon" width={25} height={25} />
-					{statType.type === "diff" ? "+" : ""}
+					{filter.type === "diff" ? "+" : ""}
 					{deaths ?? "?"}
 				</div>
 			</h2>
-
-			<label className="padding">
-				Show Uncompleted
-				<input
-					type="checkbox"
-					checked={statType.includeUncompleted}
-					onChange={() => {
-						setStatType((prev) => {
-							return { ...prev, includeUncompleted: !prev.includeUncompleted };
-						});
-					}}
-				/>
-			</label>
 
 			<label className="flex align-center searchBar">
 				<input
@@ -133,7 +126,88 @@ export default function Header({
 				<img src={magnifyingGlass} width={25} height={25} />
 			</label>
 
-			<StatTypeSelector statType={statType} setStatType={setStatType} />
+			<StatTypeSelector filter={filter} setFilter={setFilter} />
+
+			<Dropdown
+				dropdownButton={<img src={filterIcon} width={23} height={23} />}
+				buttonClass="stat-filter-button"
+				className="stat-filter"
+				alignment="right"
+			>
+				<div className="stat-filter-content">
+					<label className="padding">
+						Show Cleared
+						<input
+							type="checkbox"
+							checked={filter.showCleared}
+							onChange={() => {
+								setFilter((prev) => {
+									return { ...prev, showCleared: !prev.showCleared };
+								});
+							}}
+						/>
+					</label>
+					<label className="padding">
+						Show Uncleared
+						<input
+							type="checkbox"
+							checked={filter.showUncleared}
+							onChange={() => {
+								setFilter((prev) => {
+									return { ...prev, showUncleared: !prev.showUncleared };
+								});
+							}}
+						/>
+					</label>
+
+					<div className="flex column">
+						<span>Sort By:</span>
+						<div className="flex align-center">
+							<select
+								className="flex-grow"
+								defaultValue={filter.sortBy.type}
+								onChange={(event) => {
+									setFilter((prev) => {
+										return {
+											...prev,
+											sortBy: {
+												...prev.sortBy,
+												type: event.target.value as StatsFilterSortByType,
+											},
+										};
+									});
+								}}
+							>
+								{StatsFilterSortByArray.map((sortBy) => (
+									<option key={`${id}_${sortBy}`} value={sortBy}>
+										{capitalizeFirstLetter(sortBy)}
+									</option>
+								))}
+							</select>
+							<label className="padding">
+								Descending
+								<input
+									type="checkbox"
+									checked={filter.sortBy.direction === "descending"}
+									onChange={(event) => {
+										setFilter((prev) => {
+											return {
+												...prev,
+												sortBy: {
+													...prev.sortBy,
+													direction: event.target.checked
+														? "descending"
+														: "ascending",
+												},
+											};
+										});
+									}}
+								/>
+							</label>
+						</div>
+					</div>
+				</div>
+			</Dropdown>
 		</div>
 	);
 }

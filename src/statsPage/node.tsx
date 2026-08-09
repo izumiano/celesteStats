@@ -7,25 +7,23 @@ import tabIcon from "../assets/tab.png";
 import { useRef, useState } from "react";
 import NodeList from "./nodeList";
 import { formatTime } from "../utils";
-import {
-	getParentPath,
-	tryChangeTitle,
-	type NodeStats,
-	type NodeStatType,
-} from "./nodeTypes";
+import { getParentPath, tryChangeTitle, type NodeStats } from "./nodeTypes";
 import LoadingSpinner from "../shared/loadingSpinner";
-import { useCelesteStats } from "../shared/celesteStatsContext";
+import {
+	useCelesteStats,
+	type StatsFilter,
+} from "../shared/celesteStatsContext";
 import DeleteButton from "./header/deleteButton";
 
 export default function Node({
 	node,
 	id,
-	statType,
+	filter,
 	searchQuery,
 }: {
 	node: NodeStats;
 	id: string;
-	statType: NodeStatType;
+	filter: StatsFilter;
 	searchQuery: string;
 }) {
 	const { refreshStats } = useCelesteStats();
@@ -38,29 +36,25 @@ export default function Node({
 
 	const hasChildren = node.children.length > 0;
 
-	const nodeStats = statType.includeUncompleted
-		? node.statsWithUncompleted
-		: node.statsWithoutUncompleted;
-
 	const time = (() => {
-		switch (statType.type) {
+		switch (filter.type) {
 			case "clear":
-				return nodeStats.clearTime;
+				return node.clearTime;
 			case "current":
-				return nodeStats.timePlayed;
+				return node.timePlayed;
 			case "diff":
-				return nodeStats.timePlayed - nodeStats.clearTime;
+				return node.timePlayed - node.clearTime;
 		}
 	})();
 
 	const deaths = (() => {
-		switch (statType.type) {
+		switch (filter.type) {
 			case "clear":
-				return nodeStats.clearDeaths;
+				return node.clearDeaths;
 			case "current":
-				return nodeStats.deaths;
+				return node.deaths;
 			case "diff":
-				return nodeStats.deaths - nodeStats.clearDeaths;
+				return node.deaths - node.clearDeaths;
 		}
 	})();
 
@@ -149,13 +143,13 @@ export default function Node({
 					<div className="nodeStats">
 						<div className="flex align-center">
 							<img src={timeIcon} alt="time icon" width={20} height={20} />
-							{statType.type === "diff" ? "+" : ""}
+							{filter.type === "diff" ? "+" : ""}
 							<span>{time != null ? formatTime(time) : "?"}</span>
 						</div>
 						<div className="flex align-center">
 							<img src={deathsIcon} alt="deaths icon" width={20} height={20} />
 							<span>
-								{statType.type === "diff" ? "+" : ""}
+								{filter.type === "diff" ? "+" : ""}
 								{deaths ?? "?"}
 							</span>
 						</div>
@@ -179,7 +173,7 @@ export default function Node({
 				parentId={id}
 				stats={node.children}
 				expanded={expanded}
-				statType={statType}
+				filter={filter}
 				searchQuery={searchQuery}
 			/>
 		</div>

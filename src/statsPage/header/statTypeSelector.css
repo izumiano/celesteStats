@@ -12,7 +12,7 @@
 
 	border-radius: 1rem;
 
-	background-color: hsl(from var(--col-background) h s 40% / 0.9);
+	background-color: var(--col-neutral);
 	button {
 		background-color: transparent;
 

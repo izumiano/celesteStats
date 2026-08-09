@@ -1,25 +1,26 @@
 import "./statTypeSelector.css";
 
-import { NodeStatTypeArray, type NodeStatType } from "../nodeTypes";
 import { useId, type CSSProperties } from "react";
 import { capitalizeFirstLetter } from "../../utils";
+import {
+	StatsFilterTypeArray,
+	type StatsFilter,
+} from "../../shared/celesteStatsContext";
 
 interface StatTypeSelectorCSS extends CSSProperties {
 	"--selected-index": number;
 }
 
 export default function StatTypeSelector({
-	statType,
-	setStatType,
+	filter,
+	setFilter,
 }: {
-	statType: NodeStatType;
-	setStatType: (
-		arg: NodeStatType | ((prev: NodeStatType) => NodeStatType),
-	) => void;
+	filter: StatsFilter;
+	setFilter: (arg: StatsFilter | ((prev: StatsFilter) => StatsFilter)) => void;
 }) {
-	const statType2 = statType.type;
+	const statType = filter.type;
 
-	const selectedStatTypeIndex = NodeStatTypeArray.indexOf(statType2);
+	const selectedStatTypeIndex = StatsFilterTypeArray.indexOf(statType);
 
 	const id = useId();
 
@@ -30,21 +31,21 @@ export default function StatTypeSelector({
 				{ "--selected-index": selectedStatTypeIndex } as StatTypeSelectorCSS
 			}
 		>
-			{NodeStatTypeArray.map((statType2, index) => {
+			{StatsFilterTypeArray.map((statType, index) => {
 				return (
 					<button
-						key={`${id}${statType2}`}
+						key={`${id}${statType}`}
 						className={index === selectedStatTypeIndex ? "selected" : ""}
 						onClick={() => {
-							setStatType((prev) => {
+							setFilter((prev) => {
 								return {
-									type: statType2,
-									includeUncompleted: prev.includeUncompleted,
+									...prev,
+									type: statType,
 								};
 							});
 						}}
 					>
-						{capitalizeFirstLetter(statType2)}
+						{capitalizeFirstLetter(statType)}
 					</button>
 				);
 			})}

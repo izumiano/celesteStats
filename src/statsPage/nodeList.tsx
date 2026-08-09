@@ -1,9 +1,10 @@
 import "./nodeList.css";
 
 import Node from "./node";
-import { nodeIncludes, type NodeStats, type NodeStatType } from "./nodeTypes";
+import { nodeIncludes, type NodeStats } from "./nodeTypes";
 import { useRef, type CSSProperties } from "react";
 import useForceRerender from "../hooks/useForceRerender";
+import type { StatsFilter } from "../shared/celesteStatsContext";
 
 interface NodeListStyle extends CSSProperties {
 	"--childCount": number;
@@ -29,13 +30,13 @@ export default function NodeList({
 	parentId,
 	stats,
 	expanded,
-	statType,
+	filter,
 	searchQuery,
 }: {
 	parentId: string;
 	stats: NodeStats[] | undefined;
 	expanded: boolean;
-	statType: NodeStatType;
+	filter: StatsFilter;
 	searchQuery: string;
 }) {
 	const animationState = useRef({
@@ -63,10 +64,6 @@ export default function NodeList({
 		>
 			{(expanded || animationState.current.isAnimating) &&
 				stats?.map((node) => {
-					if (!statType.includeUncompleted && !node.hasAnyCompleted) {
-						return null;
-					}
-
 					let foundQuery = false;
 					if (searchQuery !== "") {
 						if (node.title.toLowerCase().includes(searchQuery.toLowerCase())) {
@@ -83,7 +80,7 @@ export default function NodeList({
 							key={id}
 							node={node}
 							id={id}
-							statType={statType}
+							filter={filter}
 							searchQuery={foundQuery ? "" : searchQuery}
 						/>
 					);

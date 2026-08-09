@@ -10,8 +10,8 @@ import { toast } from "react-toastify";
 import localData from "../localData";
 import {
 	getNodePath,
+	sortNodes,
 	type NodeStats,
-	type PreCalcNodeStats,
 	type SaveData,
 } from "../statsPage/nodeTypes";
 import { joinElems, tryCatch } from "../utils";
@@ -22,6 +22,7 @@ interface MapAttributesResponse {
 	ClearTime: number | null;
 	Deaths: string;
 	ClearDeaths: number | null;
+	ClearDate: number | null;
 	StrawberryCount: number | null;
 	TotalStrawberries: string;
 	BestDashes: string;
@@ -67,8 +68,9 @@ function modeNumberToTitle(mode: number) {
 
 function recurseNodes(
 	stats: LevelSetStatsResponse,
+	filter: StatsFilter,
 ): { failed: false; value: NodeStats } | { failed: true; error: unknown } {
-	return tryCatch(() => _recurseNodesImpl(stats));
+	return tryCatch(() => _recurseNodesImpl(stats, filter));
 }
 
 function isModeArray(
@@ -104,6 +106,7 @@ function isModeArray(
 
 function _recurseNodesImpl(
 	stats: ChapterStatsResponse | LevelSetStatsResponse,
+	filter: StatsFilter,
 	parent: NodeStats | null = null,
 	title: string | null = null,
 ) {
@@ -117,18 +120,13 @@ function _recurseNodesImpl(
 		title: title ?? "Unknown",
 		completed: true,
 		hasAnyCompleted: false,
-		statsWithUncompleted: {
-			timePlayed: 0,
-			clearTime: 0,
-			deaths: 0,
-			clearDeaths: 0,
-		},
-		statsWithoutUncompleted: {
-			timePlayed: 0,
-			clearTime: 0,
-			deaths: 0,
-			clearDeaths: 0,
-		},
+
+		timePlayed: 0,
+		clearTime: 0,
+		deaths: 0,
+		clearDeaths: 0,
+
+		clearDate: null,
 		strawberryCount: 0,
 		totalStrawberries: 0,
 		bestDashes: 0,
@@ -170,48 +168,54 @@ function _recurseNodesImpl(
 				nodeStats,
 				!pushToNodeStats,
 			);
-			handleNodeStats(nodeStats, node, pushToNodeStats);
+			handleNodeStats(nodeStats, node, filter, pushToNodeStats);
 		}
 	} else {
 		for (const [title, stat] of Object.entries(stats)) {
-			const node = _recurseNodesImpl(stat, nodeStats, title);
+			const node = _recurseNodesImpl(stat, filter, nodeStats, title);
 			node.isChapter = node.children[0]?.isMode ?? true;
 
-			handleNodeStats(nodeStats, node);
+			handleNodeStats(nodeStats, node, filter);
 		}
 	}
 
+	sortNodes(nodeStats.children, filter);
 	return nodeStats;
 }
 
 function handleNodeStats(
 	nodeStats: NodeStats,
 	node: NodeStats,
+	filter: StatsFilter,
 	pushToNodeStats = true,
 ) {
+	if (node.completed) {
+		nodeStats.hasAnyCompleted = true;
+		if (!filter.showCleared) {
+			return;
+		}
+	} else {
+		nodeStats.completed = false;
+		if (!filter.showUncleared) {
+			return;
+		}
+	}
+
 	if (pushToNodeStats) {
 		nodeStats.children.push(node);
 	}
-	if (!node.completed) {
-		nodeStats.completed = false;
-	} else {
-		nodeStats.hasAnyCompleted = true;
+
+	nodeStats.timePlayed += node.timePlayed;
+	nodeStats.clearTime += node.clearTime;
+	nodeStats.clearDeaths += node.clearDeaths;
+	nodeStats.deaths += node.deaths;
+
+	if (
+		nodeStats.clearDate == null ||
+		nodeStats.clearDate < (node.clearDate ?? 0)
+	) {
+		nodeStats.clearDate = node.clearDate;
 	}
-
-	const parentWithUncompleted = nodeStats.statsWithUncompleted;
-	const parentWithoutUncompleted = nodeStats.statsWithoutUncompleted;
-	const withUncompleted = node.statsWithUncompleted;
-	const withoutUncompleted = node.statsWithoutUncompleted;
-
-	parentWithUncompleted.timePlayed += withUncompleted.timePlayed;
-	parentWithUncompleted.clearTime += withUncompleted.clearTime;
-	parentWithUncompleted.clearDeaths += withUncompleted.clearDeaths;
-	parentWithUncompleted.deaths += withUncompleted.deaths;
-
-	parentWithoutUncompleted.timePlayed += withoutUncompleted.timePlayed;
-	parentWithoutUncompleted.clearTime += withoutUncompleted.clearTime;
-	parentWithoutUncompleted.clearDeaths += withoutUncompleted.clearDeaths;
-	parentWithoutUncompleted.deaths += withoutUncompleted.deaths;
 
 	nodeStats.strawberryCount += node.strawberryCount;
 	nodeStats.totalStrawberries += node.totalStrawberries;
@@ -321,34 +325,19 @@ function statAttributesToNode(
 ): NodeStats {
 	validateAttrs(attr, title, parent, isSingularSide);
 
-	const completed = attr.Completed === "true";
-
-	const statsWithUncompleted: PreCalcNodeStats = {
-		timePlayed: parseInt(attr.TimePlayed),
-		clearTime: attr.ClearTime ?? 0,
-		deaths: parseInt(attr.Deaths),
-		clearDeaths: attr.ClearDeaths ?? 0,
-	};
-	const statsWithoutUncompleted: PreCalcNodeStats = completed
-		? {
-				timePlayed: statsWithUncompleted.timePlayed,
-				clearTime: statsWithUncompleted.clearTime,
-				deaths: statsWithUncompleted.deaths,
-				clearDeaths: statsWithUncompleted.clearDeaths,
-			}
-		: {
-				timePlayed: 0,
-				clearTime: 0,
-				deaths: 0,
-				clearDeaths: 0,
-			};
+	const completed = attr.Completed === "true" || attr.ClearDate != null;
 
 	return {
 		title,
 		completed,
 		hasAnyCompleted: completed,
-		statsWithUncompleted,
-		statsWithoutUncompleted,
+
+		timePlayed: parseInt(attr.TimePlayed),
+		clearTime: attr.ClearTime ?? 0,
+		deaths: parseInt(attr.Deaths),
+		clearDeaths: attr.ClearDeaths ?? 0,
+
+		clearDate: attr.ClearDate,
 		strawberryCount: attr.StrawberryCount ?? 0,
 		totalStrawberries: parseInt(attr.TotalStrawberries),
 		bestDashes: parseInt(attr.BestDashes),
@@ -365,7 +354,7 @@ function statAttributesToNode(
 	};
 }
 
-function getLocalStats() {
+function getLocalStats(filter: StatsFilter) {
 	trace("getLocalStats");
 	const saveDataStr = localData.getLocalStats();
 
@@ -375,7 +364,7 @@ function getLocalStats() {
 
 	const saveData: SaveDataResponse = JSON.parse(saveDataStr);
 
-	const statsResult = recurseNodes(saveData.levelSetStats);
+	const statsResult = recurseNodes(saveData.levelSetStats, filter);
 
 	if (statsResult.failed) {
 		return {};
@@ -402,21 +391,63 @@ interface RefreshStatsParams {
 	silent: boolean;
 }
 
+export const StatsFilterTypeArray = ["current", "clear", "diff"] as const;
+export const StatsFilterSortByArray = [
+	"title",
+	"date",
+	"time",
+	"deaths",
+] as const;
+export type StatsFilterSortByType = (typeof StatsFilterSortByArray)[number];
+export interface StatsFilter {
+	type: (typeof StatsFilterTypeArray)[number];
+	sortBy: {
+		type: StatsFilterSortByType;
+		direction: "ascending" | "descending";
+	};
+	showCleared: boolean;
+	showUncleared: boolean;
+}
+
 const CelesteStatsContextProvider = createContext<{
 	saveData: SaveData;
 	refreshStats: (params: RefreshStatsParams) => Promise<null>;
+	filter: StatsFilter;
+	setFilter: React.Dispatch<React.SetStateAction<StatsFilter>>;
 } | null>(null);
 
 export default function CelesteStatsContext({
 	celesteStatsSrc,
+	filterState,
 	children,
 }: {
 	celesteStatsSrc: string;
+	filterState: [StatsFilter, React.Dispatch<React.SetStateAction<StatsFilter>>];
 	children: ReactNode;
 }) {
 	trace("CelesteStatsContext");
+
+	const [filter, setFilterState] = filterState;
+
 	const [saveData, setSaveData] = useState<SaveData | null>(() =>
-		getLocalStats(),
+		getLocalStats(filter),
+	);
+
+	const setFilter = useCallback(
+		(args: StatsFilter | ((prev: StatsFilter) => StatsFilter)) => {
+			let newFilter: StatsFilter;
+
+			if (typeof args === "function") {
+				newFilter = args(filter);
+			} else {
+				newFilter = args;
+			}
+
+			localData.setStatsFilter(newFilter);
+			setFilterState(newFilter);
+			setSaveData(getLocalStats(newFilter));
+		},
+		[setFilterState, filter],
 	);
 
 	console.log(saveData);
@@ -465,7 +496,7 @@ export default function CelesteStatsContext({
 
 						const saveData: SaveDataResponse = await response.json();
 
-						const statsResult = recurseNodes(saveData.levelSetStats);
+						const statsResult = recurseNodes(saveData.levelSetStats, filter);
 						if (statsResult.failed) {
 							throw statsResult.error;
 						}
@@ -520,7 +551,7 @@ export default function CelesteStatsContext({
 					.finally(() => resolve(null));
 			});
 		},
-		[celesteStatsSrc],
+		[celesteStatsSrc, filter],
 	);
 
 	if (!saveData) {
@@ -529,7 +560,7 @@ export default function CelesteStatsContext({
 
 	return (
 		<CelesteStatsContextProvider.Provider
-			value={{ saveData: saveData ?? {}, refreshStats }}
+			value={{ saveData: saveData ?? {}, refreshStats, filter, setFilter }}
 		>
 			{saveData ? children : null}
 		</CelesteStatsContextProvider.Provider>

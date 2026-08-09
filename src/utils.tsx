@@ -381,3 +381,9 @@ export function joinElems(
 		);
 	});
 }
+
+export async function copyToClipboard(text: string) {
+	return tryCatch(async () => {
+		await navigator.clipboard.writeText(text);
+	});
+}

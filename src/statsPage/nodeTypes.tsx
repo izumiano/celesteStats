@@ -3,13 +3,7 @@ import type { ReactNode } from "react";
 import React from "react";
 import { toast } from "react-toastify";
 import localData from "../localData";
-
-export interface PreCalcNodeStats {
-	timePlayed: number;
-	clearTime: number;
-	deaths: number;
-	clearDeaths: number;
-}
+import type { StatsFilter } from "../shared/celesteStatsContext";
 
 export interface NodeStats {
 	title: string;
@@ -17,9 +11,12 @@ export interface NodeStats {
 	completed: boolean;
 	hasAnyCompleted: boolean;
 
-	statsWithUncompleted: PreCalcNodeStats;
-	statsWithoutUncompleted: PreCalcNodeStats;
+	timePlayed: number;
+	clearTime: number;
+	deaths: number;
+	clearDeaths: number;
 
+	clearDate: number | null;
 	strawberryCount: number;
 	totalStrawberries: number;
 	bestDashes: number;
@@ -42,12 +39,6 @@ export interface SaveData {
 	levelSetStats?: NodeStats;
 	timestamp?: number;
 }
-
-export const NodeStatTypeArray = ["current", "clear", "diff"] as const;
-export type NodeStatType = {
-	type: (typeof NodeStatTypeArray)[number];
-	includeUncompleted: boolean;
-};
 
 export function nodeIncludes(node: NodeStats, query: string): boolean {
 	query = query.toLowerCase();
@@ -260,4 +251,71 @@ export async function tryDeleteNode(node: NodeStats) {
 			Failed deleting <b>{node.title}</b>
 		</>,
 	);
+}
+
+export function sortNodes(nodes: NodeStats[], filter: StatsFilter) {
+	const sortBy = filter.sortBy;
+
+	const direction = sortBy.direction === "descending" ? 1 : -1;
+
+	switch (sortBy.type) {
+		case "title":
+			nodes.sort((nodeA, nodeB) => {
+				return nodeA.title.localeCompare(nodeB.title) * direction;
+			});
+			break;
+		case "time":
+			nodes.sort((nodeA, nodeB) => {
+				let timeA = 0;
+				let timeB = 0;
+				switch (filter.type) {
+					case "current":
+						timeA = nodeA.timePlayed;
+						timeB = nodeB.timePlayed;
+						break;
+					case "clear":
+						timeA = nodeA.clearTime;
+						timeB = nodeB.clearTime;
+						break;
+					case "diff":
+						timeA = nodeA.timePlayed - nodeA.clearTime;
+						timeB = nodeB.timePlayed - nodeB.clearTime;
+						break;
+				}
+
+				return (timeA - timeB) * direction;
+			});
+			break;
+		case "deaths":
+			nodes.sort((nodeA, nodeB) => {
+				let deathsA = 0;
+				let deathsB = 0;
+				switch (filter.type) {
+					case "current":
+						deathsA = nodeA.deaths;
+						deathsB = nodeB.deaths;
+						break;
+					case "clear":
+						deathsA = nodeA.clearDeaths;
+						deathsB = nodeB.clearDeaths;
+						break;
+					case "diff":
+						deathsA = nodeA.deaths - nodeA.clearDeaths;
+						deathsB = nodeB.deaths - nodeB.clearDeaths;
+						break;
+				}
+
+				return (deathsA - deathsB) * direction;
+			});
+			break;
+		case "date":
+			nodes.sort((nodeA, nodeB) => {
+				return (
+					((nodeB.clearDate ?? Number.POSITIVE_INFINITY) -
+						(nodeA.clearDate ?? Number.POSITIVE_INFINITY)) *
+					direction
+				);
+			});
+			break;
+	}
 }

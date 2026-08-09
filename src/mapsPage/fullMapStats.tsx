@@ -3,70 +3,79 @@ import "../statsPage/node.css";
 import timeIcon from "../assets/time.png";
 import deathsIcon from "../assets/deaths.png";
 
-import { formatTime } from "../utils";
+import { formatDate, formatTime } from "../utils";
 import type { NodeStats } from "../statsPage/nodeTypes";
+import type { ReactNode } from "react";
+import SaveToClipboard from "../components/saveToClipboard";
 
 export default function FullMapStats({ node }: { node: NodeStats }) {
 	const stats = {
 		time: {
-			clear: node.statsWithUncompleted.clearTime,
-			current: node.statsWithUncompleted.timePlayed,
-			diff:
-				node.statsWithUncompleted.timePlayed -
-				node.statsWithUncompleted.clearTime,
+			clear: node.clearTime,
+			current: node.timePlayed,
+			diff: node.timePlayed - node.clearTime,
 		},
 		deaths: {
-			clear: node.statsWithUncompleted.clearDeaths,
-			current: node.statsWithUncompleted.deaths,
-			diff:
-				node.statsWithUncompleted.deaths -
-				node.statsWithUncompleted.clearDeaths,
+			clear: node.clearDeaths,
+			current: node.deaths,
+			diff: node.deaths - node.clearDeaths,
 		},
 	};
 
 	return (
 		<div className="stats">
-			<div>Current</div>
-			<div>Clear</div>
-			<div>Difference</div>
-			<div className="flex align-center nodeStats">
-				<img src={timeIcon} alt="time icon" width={20} height={20} />
-				<span>{formatTime(stats.time.current)}</span>
+			<div className="stat-main">
+				<div>Current</div>
+				<div>Clear</div>
+				<div>Difference</div>
+				<SingleStat value={stats.time.current} iconSrc={timeIcon}>
+					{formatTime(stats.time.current)}
+				</SingleStat>
+				<SingleStat value={stats.time.clear} iconSrc={timeIcon}>
+					{formatTime(stats.time.clear)}
+				</SingleStat>
+				<SingleStat value={stats.time.diff} iconSrc={timeIcon}>
+					+{formatTime(stats.time.diff)}
+				</SingleStat>
+				<SingleStat value={stats.deaths.current} iconSrc={deathsIcon}>
+					{stats.deaths.current}
+				</SingleStat>
+				<SingleStat value={stats.deaths.clear} iconSrc={deathsIcon}>
+					{stats.deaths.clear}
+				</SingleStat>
+				<SingleStat value={stats.deaths.diff} iconSrc={deathsIcon}>
+					+{stats.deaths.diff}
+				</SingleStat>
 			</div>
-			<div className="flex align-center nodeStats">
-				<img src={timeIcon} alt="time icon" width={20} height={20} />
-				<span>{formatTime(stats.time.clear)}</span>
-			</div>
-			<div className="flex align-center nodeStats">
-				<img src={timeIcon} alt="time icon" width={20} height={20} />
-				<span>+{formatTime(stats.time.diff)}</span>
-			</div>
-			<div className="flex align-center nodeStats">
-				<img src={deathsIcon} alt="deaths icon" width={20} height={20} />
-				<span>{stats.deaths.current}</span>
-			</div>
-			<div className="flex align-center nodeStats">
-				<img src={deathsIcon} alt="deaths icon" width={20} height={20} />
-				<span>{stats.deaths.clear}</span>
-			</div>
-			<div className="flex align-center nodeStats">
-				<img src={deathsIcon} alt="deaths icon" width={20} height={20} />
-				<span>+{stats.deaths.diff}</span>
-			</div>
-			{/* <div className="nodeInfo">
-				<div className="nodeStats">
-					<div className="flex align-center">
-						<img src={timeIcon} alt="time icon" width={20} height={20} />
+
+			{node.clearDate != null && (
+				<>
+					<hr />
+					<SaveToClipboard value={node.clearDate}>
 						<span>
-							{stats.time.clear != null ? formatTime(stats.time.clear) : "?"}
+							Cleared{" "}
+							{formatDate(new Date(node.clearDate * 1000), "dd mmm yyyy", null)}
 						</span>
-					</div>
-					<div className="flex align-center">
-						<img src={deathsIcon} alt="deaths icon" width={20} height={20} />
-						<span>{stats.deaths.clear ?? "?"}</span>
-					</div>
-				</div>
-			</div> */}
+					</SaveToClipboard>
+				</>
+			)}
 		</div>
+	);
+}
+
+function SingleStat({
+	value,
+	iconSrc,
+	children,
+}: {
+	value: unknown;
+	children: ReactNode;
+	iconSrc: string;
+}) {
+	return (
+		<SaveToClipboard value={value} className="nodeStats">
+			<img src={iconSrc} alt="time icon" width={20} height={20} />
+			<span>{children}</span>
+		</SaveToClipboard>
 	);
 }
