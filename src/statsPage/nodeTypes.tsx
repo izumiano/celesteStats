@@ -310,11 +310,14 @@ export function sortNodes(nodes: NodeStats[], filter: StatsFilter) {
 			break;
 		case "date":
 			nodes.sort((nodeA, nodeB) => {
-				return (
-					((nodeB.clearDate ?? Number.POSITIVE_INFINITY) -
-						(nodeA.clearDate ?? Number.POSITIVE_INFINITY)) *
-					direction
-				);
+				if (nodeB.clearDate == null) {
+					return 1;
+				}
+				if (nodeA.clearDate == null) {
+					return 1;
+				}
+
+				return (nodeB.clearDate - nodeA.clearDate) * direction;
 			});
 			break;
 	}
