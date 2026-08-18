@@ -443,6 +443,12 @@ export default function CelesteStatsContext({
 				newFilter = args;
 			}
 
+			// update previous filter as well to update anything that is currently capturing a reference to the previous filter
+			for (const _key of Object.keys(filter)) {
+				const key = _key as keyof typeof filter;
+				(filter[key] as unknown) = newFilter[key];
+			}
+
 			localData.setStatsFilter(newFilter);
 			setFilterState(newFilter);
 			setSaveData(getLocalStats(newFilter));
