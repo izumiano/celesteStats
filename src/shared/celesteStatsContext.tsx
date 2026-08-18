@@ -155,19 +155,10 @@ function _recurseNodesImpl(
 			// biome-ignore lint/suspicious/noDoubleEquals: <intentionally coercing string(0) to number(0) to show sides with modeNumber >0 >
 			entries.length > 1 || !entries.some((e) => e[0] == 0);
 
-		for (const [index, stat] of entries) {
+		for (const [key, stat] of entries) {
 			const attr = stat["@attributes"];
 
-			const title = modeNumberToTitle(
-				Number.isInteger(index) ? (index as number) : parseInt(index as string),
-			);
-
-			const node = statAttributesToNode(
-				attr,
-				title,
-				nodeStats,
-				!pushToNodeStats,
-			);
+			const node = statAttributesToNode(attr, key, nodeStats, !pushToNodeStats);
 			handleNodeStats(nodeStats, node, filter, pushToNodeStats);
 		}
 	} else {
@@ -319,10 +310,14 @@ function validateAttrs(
 
 function statAttributesToNode(
 	attr: MapAttributesResponse,
-	title: string,
+	key: number | string,
 	parent: NodeStats | null,
 	isSingularSide: boolean,
 ): NodeStats {
+	const mode = Number.isInteger(key)
+		? (key as number)
+		: parseInt(key as string);
+	const title = modeNumberToTitle(mode);
 	validateAttrs(attr, title, parent, isSingularSide);
 
 	const completed = attr.Completed === "true" || attr.ClearDate != null;
@@ -348,6 +343,7 @@ function statAttributesToNode(
 		heartGem: attr.HeartGem === "true",
 		singleRunCompleted: attr.SingleRunCompleted === "true",
 		isMode: true,
+		mode,
 		isChapter: false,
 		parent,
 		children: [],

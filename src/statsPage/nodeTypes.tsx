@@ -5,7 +5,9 @@ import { toast } from "react-toastify";
 import localData from "../localData";
 import type { StatsFilter } from "../shared/celesteStatsContext";
 
-export interface NodeStats {
+export type ModeSpecificStats = { isMode: true; mode: number };
+
+export type NodeStats = {
 	title: string;
 
 	completed: boolean;
@@ -27,13 +29,12 @@ export interface NodeStats {
 	heartGem: boolean;
 	singleRunCompleted: boolean;
 
-	isMode: boolean;
 	isChapter: boolean;
 	sid?: string;
 
 	parent: NodeStats | null;
 	children: NodeStats[];
-}
+} & (ModeSpecificStats | { isMode: false });
 
 export interface SaveData {
 	levelSetStats?: NodeStats;

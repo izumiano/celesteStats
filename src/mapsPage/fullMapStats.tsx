@@ -8,7 +8,13 @@ import type { NodeStats } from "../statsPage/nodeTypes";
 import type { ReactNode } from "react";
 import SaveToClipboard from "../components/saveToClipboard";
 
-export default function FullMapStats({ node }: { node: NodeStats }) {
+export default function FullMapStats({
+	node,
+	showTitle,
+}: {
+	node: NodeStats;
+	showTitle?: boolean;
+}) {
 	const stats = {
 		time: {
 			clear: node.clearTime,
@@ -22,8 +28,16 @@ export default function FullMapStats({ node }: { node: NodeStats }) {
 		},
 	};
 
+	showTitle ??= true;
+
 	return (
 		<div className="stats">
+			{showTitle && (
+				<div className="full-width flex space-between align-center pad-left-large pad-right-large">
+					<h3 className="pad-left">{node.title}</h3>
+					<ClearDate node={node} unimportant={true} />
+				</div>
+			)}
 			<div className="stat-main">
 				<div>Current</div>
 				<div>Clear</div>
@@ -47,16 +61,10 @@ export default function FullMapStats({ node }: { node: NodeStats }) {
 					+{stats.deaths.diff}
 				</SingleStat>
 			</div>
-
-			{node.clearDate != null && (
+			{!showTitle && (
 				<>
-					<hr />
-					<SaveToClipboard value={node.clearDate}>
-						<span>
-							Cleared{" "}
-							{formatDate(new Date(node.clearDate * 1000), "dd mmm yyyy", null)}
-						</span>
-					</SaveToClipboard>
+					<hr className="hor-divide" />
+					<ClearDate node={node} unimportant={false} />
 				</>
 			)}
 		</div>
@@ -77,5 +85,24 @@ function SingleStat({
 			<img src={iconSrc} alt="time icon" width={20} height={20} />
 			<span>{children}</span>
 		</SaveToClipboard>
+	);
+}
+
+function ClearDate({
+	node,
+	unimportant,
+}: {
+	node: NodeStats;
+	unimportant: boolean;
+}) {
+	return (
+		node.clearDate != null && (
+			<SaveToClipboard value={node.clearDate}>
+				<span className={`${unimportant ? "unimportant" : ""} pad-right`}>
+					Cleared{" "}
+					{formatDate(new Date(node.clearDate * 1000), "dd mmm yyyy", null)}
+				</span>
+			</SaveToClipboard>
+		)
 	);
 }

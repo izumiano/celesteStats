@@ -1,6 +1,6 @@
 import { useCelesteStats } from "../shared/celesteStatsContext";
-import { useCallback, useEffect, useState } from "react";
-import type { NodeStats } from "../statsPage/nodeTypes";
+import { Fragment, useCallback, useEffect, useId, useState } from "react";
+import type { ModeSpecificStats, NodeStats } from "../statsPage/nodeTypes";
 import FullMapStats from "./fullMapStats";
 import ChapterImage from "./chapterImage";
 
@@ -13,6 +13,8 @@ export interface GoldBerriesChapter {
 }
 
 export default function MapPage() {
+	const id = useId();
+
 	const { saveData } = useCelesteStats();
 	const [node, setNodeState] = useState<NodeStats | null>(null);
 	const [gbChapter, setGbChapter] = useState<GoldBerriesChapter | null>(null);
@@ -94,7 +96,7 @@ export default function MapPage() {
 												href={gbChapter.campaign.url}
 												target="_blank"
 												rel="noopener noreferrer"
-												className="padLeft padRight flex mapLink"
+												className="pad-left pad-right flex mapLink"
 											>
 												<img
 													src="https://images.gamebanana.com/static/img/favicon/favicon.ico"
@@ -108,7 +110,25 @@ export default function MapPage() {
 								</div>
 							</div>
 						</div>
-						<FullMapStats node={node} />
+						{node.children.length <= 1 ? (
+							<FullMapStats node={node} showTitle={false} />
+						) : (
+							[...node.children]
+								.sort((nodeA, nodeB) => {
+									return (
+										(nodeA as ModeSpecificStats).mode -
+										(nodeB as ModeSpecificStats).mode
+									);
+								})
+								.map((child, index) => (
+									<Fragment key={`${id} ${index}`}>
+										<FullMapStats node={child}></FullMapStats>
+										{index < node.children.length - 1 && (
+											<hr className="hor-divide t" />
+										)}
+									</Fragment>
+								))
+						)}
 					</main>
 				</div>
 			)}
