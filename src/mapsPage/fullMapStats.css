@@ -14,9 +14,12 @@
 		grid-template-columns: 1fr 1fr 1fr;
 
 		> * {
-			width: 100%;
-			display: flex;
-			justify-content: center;
+			text-align: center;
+
+			> * {
+				display: flex;
+				justify-content: center;
+			}
 		}
 
 		> *:not(:nth-child(3n)) {

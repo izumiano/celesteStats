@@ -34,7 +34,7 @@ export default function FullMapStats({
 		<div className="stats">
 			{showTitle && (
 				<div className="full-width flex space-between align-center pad-left-large pad-right-large">
-					<h3 className="pad-left">{node.title}</h3>
+					<h3 className="pad-left pad-right">{node.title}</h3>
 					<ClearDate node={node} unimportant={true} />
 				</div>
 			)}
@@ -97,8 +97,13 @@ function ClearDate({
 }) {
 	return (
 		node.clearDate != null && (
-			<SaveToClipboard value={node.clearDate}>
-				<span className={`${unimportant ? "unimportant" : ""} pad-right`}>
+			<SaveToClipboard
+				value={node.clearDate}
+				dropdownAlignment={unimportant ? "right" : "center"}
+			>
+				<span
+					className={`${unimportant ? "unimportant" : ""} pad-right pad-left`}
+				>
 					Cleared{" "}
 					{formatDate(new Date(node.clearDate * 1000), "dd mmm yyyy", null)}
 				</span>

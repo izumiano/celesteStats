@@ -11,12 +11,15 @@ import type { Property } from "csstype";
 import { useOutsideClick } from "../hooks/useOutsideClick";
 
 export type Alignment = "left" | "center" | "right";
+export type Direction = "up" | "down";
 
 const Dropdown = ({
 	dropdownButton,
 	alignment,
+	direction,
 	onClick,
 	className,
+	isOpen: _isOpen,
 	buttonClass,
 	buttonProps,
 	useDefaultButtonStyle,
@@ -31,8 +34,10 @@ const Dropdown = ({
 }: {
 	dropdownButton: ReactNode;
 	alignment?: Alignment;
+	direction?: Direction;
 	onClick?: (e: MouseEvent) => void;
 	className?: string;
+	isOpen?: boolean;
 	buttonClass?: string;
 	buttonProps?: React.ComponentProps<"div"> & {
 		disabled?: boolean;
@@ -52,7 +57,11 @@ const Dropdown = ({
 				closeDropdown: () => void;
 		  }) => ReactNode);
 }) => {
-	const [isOpen, setIsOpenState] = useState(false);
+	const [isOpen, setIsOpenState] = useState(_isOpen ?? false);
+	useEffect(() => {
+		setIsOpenState(_isOpen ?? false);
+	}, [_isOpen]);
+
 	const dropdownContentRef = useRef<HTMLDivElement>(null);
 	const dropdownWrapperRef = useRef<HTMLDivElement>(null);
 	const [dropdownMaxHeight, setDropdownMaxHeight] = useState(0);
@@ -132,6 +141,7 @@ const Dropdown = ({
 
 	useDefaultButtonStyle ??= true;
 	alignment ??= "left";
+	direction ??= "down";
 	backgroundColor ??= "var(--col-background)";
 	disableScroll ??= false;
 	forceStaticPosition ??= false;
@@ -165,18 +175,23 @@ const Dropdown = ({
 			>
 				{dropdownButton}
 			</div>
-			<div className="arrowContainer">
-				<div className={`dropdownMenu ${isOpenClass}`}>
-					<div className="dropdownWrapper">
+			<div className={`arrowContainer ${direction}`}>
+				<div className={`dropdownMenu ${isOpenClass} ${direction}`}>
+					<div className={`dropdownWrapper ${direction}`}>
 						<div
-							className="arrow"
+							className={`arrow ${direction}`}
 							style={{ backgroundColor: backgroundColor }}
 						></div>
 					</div>
 				</div>
 			</div>
-			<div className={`dropdownMenu ${isOpenClass} ${alignment}Align`}>
-				<div ref={dropdownWrapperRef} className="dropdownWrapper">
+			<div
+				className={`dropdownMenu ${isOpenClass} ${alignment}Align ${direction}`}
+			>
+				<div
+					ref={dropdownWrapperRef}
+					className={`dropdownWrapper ${direction}`}
+				>
 					<div
 						ref={dropdownContentRef}
 						className={`dropdownContent shimmerBackground ${dropdownContentClassName}`}
