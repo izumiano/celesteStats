@@ -284,7 +284,7 @@ export function sortNodes(nodes: NodeStats[], filter: StatsFilter) {
 						break;
 				}
 
-				return (timeA - timeB) * direction;
+				return (timeB - timeA) * direction;
 			});
 			break;
 		case "deaths":
@@ -306,7 +306,7 @@ export function sortNodes(nodes: NodeStats[], filter: StatsFilter) {
 						break;
 				}
 
-				return (deathsA - deathsB) * direction;
+				return (deathsB - deathsA) * direction;
 			});
 			break;
 		case "date":
