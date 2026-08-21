@@ -10,11 +10,13 @@ import { capitalizeFirstLetter, formatTime, sleepFor } from "../../utils";
 import type { SaveData } from "../nodeTypes";
 import StatTypeSelector from "./statTypeSelector";
 import {
+	MapsLayoutTypeValues,
 	StatsFilterSortByArray,
 	type StatsFilter,
 	type StatsFilterSortByType,
 } from "../../shared/celesteStatsContext";
 import Dropdown from "../../shared/dropdown";
+import Selector from "../../components/selector";
 
 export default function Header({
 	saveData,
@@ -135,6 +137,20 @@ export default function Header({
 				alignment="right"
 			>
 				<div className="stat-filter-content">
+					<Selector
+						selected={filter.layoutType}
+						onSelectedChange={(layoutType) =>
+							setFilter((prev) => {
+								return {
+									...prev,
+									layoutType,
+								};
+							})
+						}
+						customCss={{ "--button-width": "9rem" }}
+					>
+						{[...MapsLayoutTypeValues]}
+					</Selector>
 					<label className="padding">
 						Show Cleared
 						<input

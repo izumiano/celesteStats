@@ -1,4 +1,7 @@
-import type { StatsFilter } from "./shared/celesteStatsContext";
+import {
+	StatsFilterDefault,
+	type StatsFilter,
+} from "./shared/celesteStatsContext";
 
 export const CELESTE_STATS_LOCAL_ID = "celesteStats";
 const CELESTE_STATS_SRC_LOCAL_ID = "celesteStatsSrc";
@@ -28,9 +31,16 @@ const localData = {
 	getStatsFilter() {
 		const statsFilterStr = localStorage.getItem(STATS_FILTER);
 		if (!statsFilterStr) {
-			return null;
+			return StatsFilterDefault;
 		}
-		return JSON.parse(statsFilterStr);
+		const filter = JSON.parse(statsFilterStr) as Partial<StatsFilter>;
+
+		for (const _key of Object.keys(StatsFilterDefault)) {
+			const key = _key as keyof typeof StatsFilterDefault;
+			(filter[key] as unknown) ??= StatsFilterDefault[key];
+		}
+
+		return filter as StatsFilter;
 	},
 	setStatsFilter(filter: StatsFilter) {
 		localStorage.setItem(STATS_FILTER, JSON.stringify(filter));

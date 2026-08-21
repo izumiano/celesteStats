@@ -170,7 +170,9 @@ function _recurseNodesImpl(
 		}
 	}
 
-	sortNodes(nodeStats.children, filter);
+	if (filter.layoutType === "campaigns") {
+		sortNodes(nodeStats.children, filter);
+	}
 	return nodeStats;
 }
 
@@ -368,6 +370,7 @@ function getLocalStats(filter: StatsFilter) {
 
 	const stats = statsResult.value;
 	stats.title = "RootNode";
+	stats.isRoot = true;
 	return { levelSetStats: stats, timestamp: saveData.timestamp };
 }
 
@@ -394,7 +397,16 @@ export const StatsFilterSortByArray = [
 	"time",
 	"deaths",
 ] as const;
+export const MapsLayoutTypeValues = ["campaigns", "maps"] as const;
 export type StatsFilterSortByType = (typeof StatsFilterSortByArray)[number];
+export type MapsLayoutType = (typeof MapsLayoutTypeValues)[number];
+export const StatsFilterDefault: StatsFilter = {
+	type: "current",
+	sortBy: { type: "title", direction: "descending" },
+	showCleared: true,
+	showUncleared: true,
+	layoutType: "campaigns",
+} as const;
 export interface StatsFilter {
 	type: (typeof StatsFilterTypeArray)[number];
 	sortBy: {
@@ -403,6 +415,7 @@ export interface StatsFilter {
 	};
 	showCleared: boolean;
 	showUncleared: boolean;
+	layoutType: MapsLayoutType;
 }
 
 const CelesteStatsContextProvider = createContext<{
@@ -504,6 +517,7 @@ export default function CelesteStatsContext({
 						}
 						const stats = statsResult.value;
 						stats.title = "RootNode";
+						stats.isRoot = true;
 
 						// exclude 'parent' from saveData to not have a cyclic value
 						const dataToSave = JSON.stringify(saveData, (key, value) => {

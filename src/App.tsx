@@ -16,14 +16,7 @@ export default function App({ children }: { children: ReactNode }) {
 		localData.getCelesteStatsSrc(),
 	);
 
-	const statsFilterState = useState<StatsFilter>(
-		localData.getStatsFilter() ?? {
-			type: "current",
-			sortBy: { type: "title", direction: "descending" },
-			showCleared: true,
-			showUncleared: true,
-		},
-	);
+	const statsFilterState = useState<StatsFilter>(localData.getStatsFilter());
 
 	return (
 		<StrictMode>

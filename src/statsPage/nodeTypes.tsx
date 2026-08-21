@@ -34,6 +34,7 @@ export type NodeStats = {
 
 	parent: NodeStats | null;
 	children: NodeStats[];
+	isRoot?: boolean;
 } & (ModeSpecificStats | { isMode: false });
 
 export interface SaveData {
@@ -51,7 +52,10 @@ export function nodeIncludes(node: NodeStats, query: string): boolean {
 	);
 }
 
-function recurseParentPath(node: NodeStats, pathArr: string[] = []): string[] {
+export function recurseParentPath(
+	node: NodeStats,
+	pathArr: string[] = [],
+): string[] {
 	const parent = node.parent;
 
 	if (!parent || !parent.parent) {
@@ -322,4 +326,17 @@ export function sortNodes(nodes: NodeStats[], filter: StatsFilter) {
 			});
 			break;
 	}
+}
+
+export function nodeShouldBeShown(node: NodeStats, searchQuery?: string) {
+	let foundQuery = false;
+	if (searchQuery) {
+		if (node.title.toLowerCase().includes(searchQuery.toLowerCase())) {
+			foundQuery = true;
+		} else if (!nodeIncludes(node, searchQuery)) {
+			return { shouldShow: false, foundQuery: false };
+		}
+	}
+
+	return { shouldShow: true, foundQuery };
 }

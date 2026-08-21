@@ -6,6 +6,7 @@ import NodeList from "./nodeList";
 import Header from "./header";
 import { useHeaderContext } from "../shared/header";
 import { trace } from "@izumiano/vite-logger";
+import MapsList from "./mapsList";
 
 export default function StatsPage() {
 	trace("StatsPage");
@@ -32,13 +33,21 @@ export default function StatsPage() {
 
 	return (
 		<main className="main">
-			<NodeList
-				parentId={id}
-				stats={saveData?.levelSetStats?.children}
-				expanded={true}
-				filter={filter}
-				searchQuery={searchQuery}
-			/>
+			{filter.layoutType === "campaigns" ? (
+				<NodeList
+					parentId={id}
+					stats={saveData?.levelSetStats?.children}
+					expanded={true}
+					filter={filter}
+					searchQuery={searchQuery}
+				/>
+			) : (
+				<MapsList
+					stats={saveData?.levelSetStats}
+					filter={filter}
+					searchQuery={searchQuery}
+				/>
+			)}
 		</main>
 	);
 }

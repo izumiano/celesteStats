@@ -1,15 +1,8 @@
-import "./statTypeSelector.css";
-
-import { useId, type CSSProperties } from "react";
-import { capitalizeFirstLetter } from "../../utils";
 import {
 	StatsFilterTypeArray,
 	type StatsFilter,
 } from "../../shared/celesteStatsContext";
-
-interface StatTypeSelectorCSS extends CSSProperties {
-	"--selected-index": number;
-}
+import Selector from "../../components/selector";
 
 export default function StatTypeSelector({
 	filter,
@@ -19,36 +12,19 @@ export default function StatTypeSelector({
 	setFilter: (arg: StatsFilter | ((prev: StatsFilter) => StatsFilter)) => void;
 }) {
 	const statType = filter.type;
-
-	const selectedStatTypeIndex = StatsFilterTypeArray.indexOf(statType);
-
-	const id = useId();
-
 	return (
-		<div
-			className="statTypeSelector flex align-center"
-			style={
-				{ "--selected-index": selectedStatTypeIndex } as StatTypeSelectorCSS
+		<Selector
+			selected={statType}
+			onSelectedChange={(a) =>
+				setFilter((prev) => {
+					return {
+						...prev,
+						type: a,
+					};
+				})
 			}
 		>
-			{StatsFilterTypeArray.map((statType, index) => {
-				return (
-					<button
-						key={`${id}${statType}`}
-						className={index === selectedStatTypeIndex ? "selected" : ""}
-						onClick={() => {
-							setFilter((prev) => {
-								return {
-									...prev,
-									type: statType,
-								};
-							});
-						}}
-					>
-						{capitalizeFirstLetter(statType)}
-					</button>
-				);
-			})}
-		</div>
+			{[...StatsFilterTypeArray]}
+		</Selector>
 	);
 }

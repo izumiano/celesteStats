@@ -1,7 +1,7 @@
 import "./nodeList.css";
 
 import Node from "./node";
-import { nodeIncludes, type NodeStats } from "./nodeTypes";
+import { nodeShouldBeShown, type NodeStats } from "./nodeTypes";
 import { useRef, type CSSProperties } from "react";
 import useForceRerender from "../hooks/useForceRerender";
 import type { StatsFilter } from "../shared/celesteStatsContext";
@@ -33,11 +33,11 @@ export default function NodeList({
 	filter,
 	searchQuery,
 }: {
-	parentId: string;
+	parentId?: string;
 	stats: NodeStats[] | undefined;
 	expanded: boolean;
 	filter: StatsFilter;
-	searchQuery: string;
+	searchQuery?: string;
 }) {
 	const animationState = useRef({
 		expanded,
@@ -64,13 +64,13 @@ export default function NodeList({
 		>
 			{(expanded || animationState.current.isAnimating) &&
 				stats?.map((node) => {
-					let foundQuery = false;
-					if (searchQuery !== "") {
-						if (node.title.toLowerCase().includes(searchQuery.toLowerCase())) {
-							foundQuery = true;
-						} else if (!nodeIncludes(node, searchQuery)) {
-							return null;
-						}
+					const { shouldShow, foundQuery } = nodeShouldBeShown(
+						node,
+						searchQuery,
+					);
+
+					if (!shouldShow) {
+						return null;
 					}
 
 					const id = `${parentId}/${node.title}`;

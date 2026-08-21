@@ -88,7 +88,7 @@
 		&:is(input) {
 			field-sizing: content;
 			@supports not (field-sizing: content) {
-				width: 100%;
+				flex: 1 1 auto;
 			}
 		}
 	}
@@ -107,4 +107,29 @@
 
 .nodeStats {
 	color: rgb(179, 179, 179);
+}
+
+.mapPathContainer {
+	display: flex;
+
+	--color: var(--col-divider);
+	color: var(--color);
+
+	> * {
+		position: relative;
+		--size: 0.5rem;
+		--padding: 0.3rem;
+		margin-left: calc(var(--size) + 2 * var(--padding));
+		&::before {
+			position: absolute;
+			content: "";
+			width: var(--size);
+			height: var(--size);
+			left: calc(-1 * var(--size) - var(--padding));
+			top: 50%;
+			translate: 0 -50%;
+			background-color: var(--color);
+			border-radius: 100%;
+		}
+	}
 }

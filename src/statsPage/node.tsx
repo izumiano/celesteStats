@@ -7,7 +7,13 @@ import tabIcon from "../assets/tab.png";
 import { useRef, useState } from "react";
 import NodeList from "./nodeList";
 import { formatTime } from "../utils";
-import { getParentPath, tryChangeTitle, type NodeStats } from "./nodeTypes";
+import {
+	getParentPath,
+	recurseParentPath,
+	tryChangeTitle,
+	type ModeSpecificStats,
+	type NodeStats,
+} from "./nodeTypes";
 import LoadingSpinner from "../shared/loadingSpinner";
 import {
 	useCelesteStats,
@@ -20,11 +26,13 @@ export default function Node({
 	id,
 	filter,
 	searchQuery,
+	forceShowMapLink,
 }: {
 	node: NodeStats;
 	id: string;
 	filter: StatsFilter;
-	searchQuery: string;
+	searchQuery?: string;
+	forceShowMapLink?: boolean;
 }) {
 	const { refreshStats } = useCelesteStats();
 	const [expanded, setExpanded] = useState(false);
@@ -74,6 +82,9 @@ export default function Node({
 
 	const canBeDeleted = !node.isChapter && !node.isMode;
 
+	// biome-ignore lint/style/noNonNullAssertion: <parent should only ever be null on root node and root node should never be displayed>
+	const nodeForMapLink = forceShowMapLink && node.isMode ? node.parent! : node;
+
 	return (
 		<div
 			className={`node ${expanded ? "expanded" : ""} ${hasChildren ? "" : "empty"} ${canBeDeleted ? "deletable" : ""}`}
@@ -89,7 +100,7 @@ export default function Node({
 				className="nodeHeader"
 			>
 				<div className="nodeInfo">
-					<div className="flex alignItems">
+					<div className="flex alignItems flex-wrap">
 						{renameLoadingState === "finished" && !node.isMode ? (
 							<input
 								defaultValue={titleRef.current}
@@ -121,13 +132,24 @@ export default function Node({
 								)}
 							</div>
 						)}
+						{filter.layoutType === "maps" && (
+							<div className="mapPathContainer">
+								{recurseParentPath(node).map((title, index) => (
+									<span
+										key={`${id}_${node.sid ?? `${node.parent?.sid}${(node as ModeSpecificStats).mode}`}_${index}_path`}
+									>
+										{title}
+									</span>
+								))}
+							</div>
+						)}
 						<div
 							className="mapLinks flex"
 							onClick={(event) => event.stopPropagation()}
 						>
-							{node.sid && (
+							{nodeForMapLink.sid && (
 								<a
-									href={`/celesteStats/maps/?path=${[getParentPath(node), node.title].filter((segment) => !!segment).join("/")}`}
+									href={`/celesteStats/maps/?path=${[getParentPath(nodeForMapLink), nodeForMapLink.title].filter((segment) => !!segment).join("/")}`}
 									className="flex mapLink"
 								>
 									<img
