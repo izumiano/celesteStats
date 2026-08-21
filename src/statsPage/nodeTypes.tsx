@@ -330,12 +330,25 @@ export function sortNodes(nodes: NodeStats[], filter: StatsFilter) {
 	}
 }
 
-export function nodeShouldBeShown(node: NodeStats, searchQuery?: string) {
+export function nodeShouldBeShown(
+	node: NodeStats,
+	searchQuery: string | undefined,
+	searchParent?: boolean,
+) {
+	searchQuery = searchQuery?.toLowerCase();
+
 	let foundQuery = false;
 	if (searchQuery) {
-		if (node.title.toLowerCase().includes(searchQuery.toLowerCase())) {
+		if (node.title.toLowerCase().includes(searchQuery)) {
 			foundQuery = true;
 		} else if (!nodeIncludes(node, searchQuery)) {
+			if (searchParent) {
+				for (const title of recurseParentPath(node)) {
+					if (title.toLowerCase().includes(searchQuery)) {
+						return { shouldShow: true, foundQuery: true };
+					}
+				}
+			}
 			return { shouldShow: false, foundQuery: false };
 		}
 	}

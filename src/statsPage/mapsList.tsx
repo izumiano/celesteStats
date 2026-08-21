@@ -16,7 +16,7 @@ function recurseNodes(
 	const nodes: NodeStats[] = [];
 
 	if (node.children.length === 0) {
-		const { shouldShow } = nodeShouldBeShown(node, searchQuery);
+		const { shouldShow } = nodeShouldBeShown(node, searchQuery, true);
 		if (shouldShow && !node.isRoot) {
 			nodes.push(node);
 		}
@@ -25,7 +25,7 @@ function recurseNodes(
 
 	for (const child of node.children) {
 		if ((child.isChapter && child.children.length === 0) || child.isMode) {
-			const { shouldShow } = nodeShouldBeShown(child, searchQuery);
+			const { shouldShow } = nodeShouldBeShown(child, searchQuery, true);
 			if (shouldShow) {
 				nodes.push(child);
 			}

@@ -102,6 +102,7 @@ export default function Node({
 				<div className="nodeInfo">
 					<div className="flex alignItems flex-wrap">
 						{renameLoadingState === "finished" && !node.isMode ? (
+							// TODO: fix potential issue where value doesn't update when node.title changes
 							<input
 								defaultValue={titleRef.current}
 								className="nodeTitle"
