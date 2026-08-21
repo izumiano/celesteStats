@@ -192,7 +192,9 @@ async function tryChangeTitleInternal(
 
 	try {
 		const response = await fetch(
-			`${localData.getCelesteStatsSrc()}/celesteSaves/database.php?q=changeMapName`,
+			import.meta.env.VITE_USE_SERVER_DEV === "true"
+				? `${localData.getCelesteStatsSrc()}/celesteSaves/database.php?q=changeMapName&dev`
+				: `${localData.getCelesteStatsSrc()}/celesteSaves/database.php?q=changeMapName`,
 			{ method: "POST", body: JSON.stringify({ oldName, newName, mapNames }) },
 		);
 		const body = await response.json();

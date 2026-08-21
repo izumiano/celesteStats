@@ -4,7 +4,8 @@ interface ImportMetaEnv {
 	VITE_TRACE: string;
 	VITE_DO_SERVER_LOG: string;
 	VITE_LOG_URL: string;
-	VITE_DISABLE_STAT_REFRESH: string
+	VITE_DISABLE_STAT_REFRESH: string;
+	VITE_USE_SERVER_DEV: string;
 }
 
 interface ImportMeta {

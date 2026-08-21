@@ -490,9 +490,14 @@ export default function CelesteStatsContext({
 			}, 10000);
 
 			return new Promise<null>((resolve) => {
-				fetch(`${celesteStatsSrc}/celesteSaves/celesteSaves.php`, {
-					signal: controller.signal,
-				})
+				fetch(
+					import.meta.env.VITE_USE_SERVER_DEV === "true"
+						? `${celesteStatsSrc}/celesteSaves/celesteSaves.php?dev`
+						: `${celesteStatsSrc}/celesteSaves/celesteSaves.php`,
+					{
+						signal: controller.signal,
+					},
+				)
 					.then(async (response) => {
 						isConnected = true;
 
