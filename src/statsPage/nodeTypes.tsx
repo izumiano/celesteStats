@@ -318,7 +318,7 @@ export function sortNodes(nodes: NodeStats[], filter: StatsFilter) {
 		case "date":
 			nodes.sort((nodeA, nodeB) => {
 				if (nodeB.clearDate == null) {
-					return 1;
+					return -1;
 				}
 				if (nodeA.clearDate == null) {
 					return 1;
