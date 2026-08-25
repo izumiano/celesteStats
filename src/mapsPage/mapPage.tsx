@@ -9,7 +9,7 @@ import "./mapPage.css";
 export interface GoldBerriesChapter {
 	id: number;
 	name: string;
-	campaign: { id: number; name: string; url: string };
+	campaign: { id: number; name: string; url: string; gamebananaId?: number };
 }
 
 export default function MapPage() {
@@ -17,7 +17,8 @@ export default function MapPage() {
 
 	const { saveData } = useCelesteStats();
 	const [node, setNodeState] = useState<NodeStats | null>(null);
-	const [gbChapter, setGbChapter] = useState<GoldBerriesChapter | null>(null);
+	const [goldberriesChapter, setGoldberriesChapter] =
+		useState<GoldBerriesChapter | null>(null);
 
 	const setNode = useCallback((node: NodeStats | null) => {
 		setNodeState(node);
@@ -63,7 +64,18 @@ export default function MapPage() {
 				return;
 			}
 
-			setGbChapter(response[0]);
+			const chapter = response[0];
+			const gamebananaMatch = chapter.campaign.url.match(
+				/gamebanana\.com\/mods\/(\d+)/,
+			);
+			if (gamebananaMatch?.[1]) {
+				const gamebananaId = parseInt(gamebananaMatch[1]);
+				chapter.campaign.gamebananaId = Number.isNaN(gamebananaId)
+					? undefined
+					: gamebananaId;
+			}
+
+			setGoldberriesChapter(chapter);
 		})();
 	}, [saveData.levelSetStats, setNode]);
 
@@ -72,15 +84,15 @@ export default function MapPage() {
 			{node && (
 				<div className="flex column map-page">
 					<main>
-						<ChapterImage gbChapter={gbChapter} />
+						<ChapterImage gbChapter={goldberriesChapter} />
 						<div className="flex image-overlay">
 							<div className="flex title">
 								<div className="flex">
 									<h2>{node.title}</h2>
-									{gbChapter && (
+									{goldberriesChapter && (
 										<div className="mapLinks">
 											<a
-												href={`https://goldberries.net/map/${gbChapter.id}`}
+												href={`https://goldberries.net/map/${goldberriesChapter.id}`}
 												target="_blank"
 												rel="noopener noreferrer"
 												className="flex mapLink"
@@ -93,7 +105,7 @@ export default function MapPage() {
 												/>
 											</a>
 											<a
-												href={gbChapter.campaign.url}
+												href={goldberriesChapter.campaign.url}
 												target="_blank"
 												rel="noopener noreferrer"
 												className="pad-left pad-right flex mapLink"
