@@ -150,7 +150,7 @@ export default function Node({
 						>
 							{nodeForMapLink.sid && (
 								<a
-									href={`/celesteStats/maps/?path=${[getParentPath(nodeForMapLink), nodeForMapLink.title].filter((segment) => !!segment).join("/")}`}
+									href={`/celesteStats/maps/?path=${encodeURIComponent([getParentPath(nodeForMapLink), nodeForMapLink.title].filter((segment) => !!segment).join("/"))}`}
 									className="flex mapLink"
 								>
 									<img
