@@ -1,6 +1,6 @@
 import "./saveToClipboard.css";
 
-import { useRef, useState, type ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
 import { copyToClipboard } from "../utils";
 import { toast } from "react-toastify";
 import Dropdown, { type Alignment } from "../shared/dropdown";
@@ -16,7 +16,6 @@ export default function SaveToClipboard({
 	className?: string;
 	children: ReactNode;
 }) {
-	const [isOpen, setIsOpen] = useState(false);
 	const timeoutRef = useRef<number>(null);
 
 	dropdownAlignment ??= "center";
@@ -24,20 +23,22 @@ export default function SaveToClipboard({
 	return (
 		<Dropdown
 			dropdownButton={children}
-			onClick={async () => {
+			onClick={async (_, {setIsOpen}) => {
 				const result = await copyToClipboard(`${value}`);
 				if (result.failed) {
 					toast.error("Failed copying to clipboard");
 					return;
 				}
+				
+				setIsOpen(true);
 
 				timeoutRef.current = setTimeout(() => {
 					timeoutRef.current = null;
 					setIsOpen(false);
 				}, 1500);
 			}}
-			isOpen={isOpen}
-			onOpenChange={(isOpen) => {
+			manualOpening
+			onOpenChange={(isOpen, {setIsOpen}) => {
 				setIsOpen(isOpen);
 				if (timeoutRef.current != null) {
 					clearTimeout(timeoutRef.current);

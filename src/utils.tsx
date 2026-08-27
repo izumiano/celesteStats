@@ -329,6 +329,17 @@ export function tryCatch<TReturn>(
 	try {
 		return { failed: false, value: func() };
 	} catch (error) {
+		console.log("error");
+		return { failed: true, error };
+	}
+}
+
+export async function tryCatchAsync<TReturn>(
+	func: () => Promise<TReturn>,
+): Promise<{ failed: false; value: TReturn } | { failed: true; error: unknown }> {
+	try {
+		return { failed: false, value: await func() };
+	} catch (error) {
 		return { failed: true, error };
 	}
 }
@@ -383,7 +394,11 @@ export function joinElems(
 }
 
 export async function copyToClipboard(text: string) {
-	return tryCatch(async () => {
+	return tryCatchAsync(async () => {
+		if(navigator.clipboard == null) {
+			throw new Error("Failed writing to clipboard");
+		}
+		
 		await navigator.clipboard.writeText(text);
 	});
 }

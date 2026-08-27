@@ -3,6 +3,7 @@ import { Fragment, useCallback, useEffect, useId, useState } from "react";
 import type { ModeSpecificStats, NodeStats } from "../statsPage/nodeTypes";
 import FullMapStats from "./fullMapStats";
 import ChapterImage from "./chapterImage";
+import SaveToClipboard from "../components/saveToClipboard";
 
 import "./mapPage.css";
 import { toast } from "react-toastify";
@@ -156,7 +157,9 @@ export default function MapPage() {
 						<div className="flex image-overlay">
 							<div className="flex title">
 								<div className="flex">
-									<h2>{node.title}</h2>
+									<SaveToClipboard value={node.sid} dropdownAlignment="left">
+										<h2>{node.title}</h2>
+									</SaveToClipboard>
 									{goldberriesChapters !== "pending" &&
 										gamebananaCampaign !== "pending" &&
 										(goldberriesChapter || gamebananaCampaign?.id != null) && (

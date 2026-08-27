@@ -20,6 +20,7 @@ const Dropdown = ({
 	onClick,
 	className,
 	isOpen: _isOpen,
+	manualOpening,
 	buttonClass,
 	buttonProps,
 	useDefaultButtonStyle,
@@ -35,9 +36,10 @@ const Dropdown = ({
 	dropdownButton: ReactNode;
 	alignment?: Alignment;
 	direction?: Direction;
-	onClick?: (e: MouseEvent) => void;
+	onClick?: (e: MouseEvent, params: {setIsOpen: (isOpen: boolean) => void}) => void;
 	className?: string;
 	isOpen?: boolean;
+	manualOpening?: boolean;
 	buttonClass?: string;
 	buttonProps?: React.ComponentProps<"div"> & {
 		disabled?: boolean;
@@ -45,7 +47,7 @@ const Dropdown = ({
 	useDefaultButtonStyle?: boolean;
 	backgroundColor?: Property.BackgroundColor;
 	dropdownContentClassName?: string;
-	onOpenChange?: (isOpen: boolean) => void;
+	onOpenChange?: (isOpen: boolean, params: {setIsOpen: (isOpen: boolean) => void}) => void;
 	listRef?: React.RefObject<HTMLUListElement | null>;
 	scrollElementRef?: React.RefObject<HTMLDivElement | null>;
 	disableScroll?: boolean;
@@ -147,12 +149,20 @@ const Dropdown = ({
 	forceStaticPosition ??= false;
 
 	const isOpenClass = isOpen ? "show" : "hide";
-	const setIsOpen = useCallback(
+	const setIsOpenImpl = useCallback(
 		(isOpen: boolean) => {
-			onOpenChange?.call(null, isOpen);
+			onOpenChange?.call(null, isOpen, {setIsOpen: setIsOpenState});
 			setIsOpenState(isOpen);
 		},
 		[onOpenChange],
+	);
+	const setIsOpen = useCallback(
+		(isOpen: boolean) => {
+			if(!manualOpening) {
+				setIsOpenImpl(isOpen);
+			}
+		},
+		[setIsOpenImpl, manualOpening],
 	);
 
 	const toggleOpen = () => {
@@ -162,7 +172,7 @@ const Dropdown = ({
 	return (
 		<div
 			ref={useOutsideClick(useCallback(() => setIsOpen(false), [setIsOpen]))}
-			onClick={onClick}
+			onClick={(event) => onClick?.(event, {setIsOpen: setIsOpenImpl})}
 			className={`dropdown ${className} ${forceStaticPosition ? "forceStatic" : ""}`}
 		>
 			<div
