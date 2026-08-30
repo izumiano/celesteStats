@@ -189,7 +189,7 @@ function handleNodeStats(
 		}
 	} else {
 		nodeStats.completed = false;
-		if (!filter.showUncleared) {
+		if (!filter.showUncleared && node.children.length === 0) {
 			return;
 		}
 	}
